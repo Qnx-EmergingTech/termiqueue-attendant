@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable, Image, Dimensions } from 'react-native'
-import { Stack } from 'expo-router';
+import { Stack, Link } from 'expo-router';
 import { useFonts, Roboto_400Regular, Roboto_700Bold, Roboto_300Light, Roboto_500Medium } from "@expo-google-fonts/roboto";
 
 export default function Index() {
@@ -29,10 +29,12 @@ export default function Index() {
                 <Text style={styles.title}>Welcome to Termi-Q Attendant</Text>
                 <Text style={styles.subtitle}>Confirm arrivals. Keep the queue moving.</Text>
             </View>
-            <Pressable style={styles.signupButton}>SIGN UP</Pressable>
+            <Pressable style={styles.signupButton}>
+                <Text style={styles.signUp}>SIGN UP</Text>
+            </Pressable>
             <View style={styles.bottom}>
                 <Text style={styles.bot}>Already have an account? </Text>
-                <Pressable style={styles.loginButton}>LOG IN</Pressable>
+                <Link href="/login" style={styles.loginButton}>LOG IN</Link>
             </View>
         </View>
     </>
@@ -78,21 +80,23 @@ const styles = StyleSheet.create({
         fontFamily: "Roboto_300Light",
         fontSize: 16,
         color: "#A1A4B2",
-        marginBottom: 40,
+        marginBottom: 30,
     },
     signupButton: {
         borderRadius: 38,
         backgroundColor: "#096B72",
-        fontFamily: "Roboto_500Medium",
-        fontSize: 14,
         justifyContent: "center",
         paddingVertical: 12,
         paddingHorizontal: 24,
-        color: "white",
         alignSelf: "center",
         width: screenWidth * 0.83,
         alignItems: "center",
         marginBottom: 10,
+    },
+    signUp: {
+        fontFamily: "Roboto_500Medium",
+        fontSize: 14,
+        color: "white",
     },
     bottom: {
         flexDirection: "row",
