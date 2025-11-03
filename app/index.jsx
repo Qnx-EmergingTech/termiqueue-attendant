@@ -1,8 +1,10 @@
-import { View, Text, StyleSheet, Pressable, Image, Dimensions } from 'react-native'
-import { Stack, Link } from 'expo-router';
-import { useFonts, Roboto_400Regular, Roboto_700Bold, Roboto_300Light, Roboto_500Medium } from "@expo-google-fonts/roboto";
+import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
+import { Link, Stack, useRouter } from 'expo-router';
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
+  const router = useRouter();
+
   const [fontsLoaded] = useFonts({
     Roboto_400Regular,
     Roboto_300Light,
@@ -29,7 +31,7 @@ export default function Index() {
                 <Text style={styles.title}>Welcome to Termi-Q Attendant</Text>
                 <Text style={styles.subtitle}>Confirm arrivals. Keep the queue moving.</Text>
             </View>
-            <Pressable style={styles.signupButton}>
+            <Pressable style={styles.signupButton} onPress={() => router.push("/signup")}>
                 <Text style={styles.signUp}>SIGN UP</Text>
             </Pressable>
             <View style={styles.bottom}>

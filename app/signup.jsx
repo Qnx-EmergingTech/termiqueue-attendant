@@ -1,8 +1,11 @@
-import { View, Text, TextInput, Pressable, StyleSheet, Dimensions, Image } from 'react-native'
-import { Stack, Link } from 'expo-router';
-import { useFonts, Roboto_400Regular, Roboto_700Bold, Roboto_300Light, Roboto_500Medium } from "@expo-google-fonts/roboto";
+import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Stack, useRouter } from 'expo-router';
+import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function Login() {
+  const router = useRouter();
+
   const [fontsLoaded] = useFonts({
       Roboto_400Regular,
       Roboto_300Light,
@@ -29,7 +32,7 @@ export default function Login() {
           source={require('../assets/images/Blob.png')}
           style={styles.image}
         />
-        <Text style={styles.heading}>Welcome Back!</Text>
+        <Text style={styles.heading}>Create your account</Text>
 
       <View style={styles.mid}>
         <TextInput 
@@ -43,17 +46,23 @@ export default function Login() {
           secureTextEntry
           style={styles.input}
         />
-        <Pressable style={styles.loginButton}>
-          <Text style={styles.login}>LOG IN</Text>
+        <TextInput 
+          placeholder="Confirm Password"
+          //value={confirmpass}
+          secureTextEntry
+          style={styles.input}
+        />
+        <View style={styles.privacy}>
+            <Text style={styles.read}>I have read the </Text>
+            <Text style={styles.policy}>Privacy Policy</Text>
+            <MaterialIcons name="check-box-outline-blank" size={24} color="#A1A4B2" style={styles.box}/>
+        </View>
+        <Pressable style={styles.loginButton} onPress={() => router.push("/kyc")}>
+          <Text style={styles.login}>PROCEED</Text>
         </Pressable>
-        <Text style={styles.fp}>Forgot Password?</Text>
         </View>
       </View>
 
-      <View style={styles.bottom}>
-        <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
-        <Link href="/signup" style={styles.signUp}>SIGN UP</Link>
-      </View>
     </View>
     </>
   )
@@ -112,6 +121,26 @@ const styles = StyleSheet.create({
       letterSpacing: 1,
       alignSelf: "center",
     },
+    privacy: {
+        flexDirection: "row",
+        alignSelf: "flex-start",
+        marginLeft: 10,
+        marginTop: 20,
+        alignItems: "center",
+    },
+    policy: {
+        fontFamily: "Roboto_500Medium",
+        fontSize: 14,
+        color: "#7583CA",
+    },
+    box: {
+        marginLeft: 90,
+    },
+    read: {
+        fontFamily: "Roboto_500Medium",
+        fontSize: 14,
+        color: "#A1A4B2",
+    },
     loginButton: {
         borderRadius: 38,
         backgroundColor: "#096B72",
@@ -126,28 +155,6 @@ const styles = StyleSheet.create({
     },
     login: {
         color: "white",
-        fontFamily: "Roboto_500Medium",
-        fontSize: 14,
-    },
-    fp: {
-        fontFamily: "Roboto_500Medium",
-        fontSize: 14,
-        letterSpacing: 1, 
-    },
-    bottom: {
-        flexDirection: "row",
-        justifyContent: "center",
-        marginBottom: 60,
-        alignItems: "center",
-        letterSpacing: 1,
-    },
-    bot: {
-        color: "#A1A4B2",
-        fontFamily: "Roboto_300Light",
-        fontSize: 14,
-    },
-    signUp: {
-        color: "#096B72",
         fontFamily: "Roboto_500Medium",
         fontSize: 14,
     },
