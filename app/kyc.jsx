@@ -1,12 +1,9 @@
 import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Stack, useRouter } from 'expo-router';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Link, Stack } from 'expo-router';
+import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View, } from 'react-native';
 
-export default function Signup() {
-  const router = useRouter();
-
-  const [fontsLoaded] = useFonts({
+export default function Kyc() {
+    const [fontsLoaded] = useFonts({
       Roboto_400Regular,
       Roboto_300Light,
       Roboto_700Bold,
@@ -14,7 +11,7 @@ export default function Signup() {
     });
   
     if (!fontsLoaded) return null;
-
+    
   return (
     <>
       <Stack.Screen
@@ -25,44 +22,47 @@ export default function Signup() {
           headerBackTitleVisible: false 
         }}
       />
-    
+
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image 
-          source={require('../assets/images/Blob.png')}
-          style={styles.image}
-        />
-        <Text style={styles.heading}>Create your account</Text>
+        <View style={styles.imageContainer}>
+            <Image 
+                source={require('../assets/images/Blob.png')}
+                style={styles.image}
+            />
+            <Text style={styles.heading}>Create your profile</Text>
+      
+            <View style={styles.mid}>
+              <TextInput 
+                placeholder="First name"
+                //value={email}
+                style={styles.input}
+              />
+              <TextInput 
+                placeholder="Middle name (optional)"
+                //value={email}
+                style={styles.input}
+              />
+              <TextInput 
+                placeholder="Last name"
+                //value={email}
+                style={styles.input}
+              />
+              <TextInput 
+                placeholder="Full address"
+                //value={email}
+                style={styles.input}
+              />
+              <Pressable style={styles.proceedButton}>
+                <Text style={styles.proceed}>PROCEED</Text>
+              </Pressable>
+              <Text style={styles.fp}>Forgot Password?</Text>
+            </View>
 
-      <View style={styles.mid}>
-        <TextInput 
-          placeholder="Email address"
-          //value={email}
-          style={styles.input}
-        />
-        <TextInput 
-          placeholder="Password"
-          //value={password}
-          secureTextEntry
-          style={styles.input}
-        />
-        <TextInput 
-          placeholder="Confirm Password"
-          //value={confirmpass}
-          secureTextEntry
-          style={styles.input}
-        />
-        <View style={styles.privacy}>
-            <Text style={styles.read}>I have read the </Text>
-            <Text style={styles.policy}>Privacy Policy</Text>
-            <MaterialIcons name="check-box-outline-blank" size={24} color="#A1A4B2" style={styles.box}/>
+            <View style={styles.bottom}>
+                <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
+                <Link href="/signup" style={styles.signUp}>LOG IN</Link>
+            </View>
         </View>
-        <Pressable style={styles.loginButton} onPress={() => router.push("/kyc")}>
-          <Text style={styles.login}>PROCEED</Text>
-        </Pressable>
-        </View>
-      </View>
-
     </View>
     </>
   )
@@ -97,11 +97,11 @@ const styles = StyleSheet.create({
         fontFamily: "Roboto_700Bold",
         fontSize: 28,
         textAlign: "center",
-        marginTop: 50,
+        marginTop: 10,
     },
     mid: {
         flex: 1, 
-        marginTop: 60,
+        marginTop: 100,
         justifyContent: "center",
         alignItems: "center",
         paddingHorizontal: 20,
@@ -121,27 +121,7 @@ const styles = StyleSheet.create({
       letterSpacing: 1,
       alignSelf: "center",
     },
-    privacy: {
-        flexDirection: "row",
-        alignSelf: "flex-start",
-        marginLeft: 10,
-        marginTop: 20,
-        alignItems: "center",
-    },
-    policy: {
-        fontFamily: "Roboto_500Medium",
-        fontSize: 14,
-        color: "#7583CA",
-    },
-    box: {
-        marginLeft: 90,
-    },
-    read: {
-        fontFamily: "Roboto_500Medium",
-        fontSize: 14,
-        color: "#A1A4B2",
-    },
-    loginButton: {
+    proceedButton: {
         borderRadius: 38,
         backgroundColor: "#096B72",
         justifyContent: "center",
@@ -153,8 +133,30 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginTop: 20,
     },
-    login: {
+    proceed: {
         color: "white",
+        fontFamily: "Roboto_500Medium",
+        fontSize: 14,
+    },
+    fp: {
+        fontFamily: "Roboto_500Medium",
+        fontSize: 14,
+        letterSpacing: 1, 
+    },
+    bottom: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginBottom: 60,
+        alignItems: "center",
+        letterSpacing: 1,
+    },
+    bot: {
+        color: "#A1A4B2",
+        fontFamily: "Roboto_300Light",
+        fontSize: 14,
+    },
+    signUp: {
+        color: "#096B72",
         fontFamily: "Roboto_500Medium",
         fontSize: 14,
     },
