@@ -1,10 +1,8 @@
 import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
-import { Link, Stack, useRouter } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View, } from 'react-native';
 
 export default function Kyc() {
-    const router = useRouter();
-
     const [fontsLoaded] = useFonts({
       Roboto_400Regular,
       Roboto_300Light,
@@ -31,30 +29,30 @@ export default function Kyc() {
                 source={require('../assets/images/Blob.png')}
                 style={styles.image}
             />
-            <Text style={styles.heading}>Create your profile</Text>
+            <Text style={styles.heading}>Set your bus route</Text>
       
             <View style={styles.mid}>
               <TextInput 
-                placeholder="First name"
+                placeholder="Bus company"
                 //value={email}
                 style={styles.input}
               />
               <TextInput 
-                placeholder="Middle name (optional)"
+                placeholder="Bus number"
                 //value={email}
                 style={styles.input}
               />
               <TextInput 
-                placeholder="Last name"
+                placeholder="Max seat capacity"
                 //value={email}
                 style={styles.input}
               />
               <TextInput 
-                placeholder="Full address"
+                placeholder="Route"
                 //value={email}
                 style={styles.input}
               />
-              <Pressable style={styles.proceedButton} onPress={() => router.push("/route")}>
+              <Pressable style={styles.proceedButton}>
                 <Text style={styles.proceed}>PROCEED</Text>
               </Pressable>
               <Text style={styles.fp}>Forgot Password?</Text>
