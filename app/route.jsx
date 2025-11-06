@@ -1,10 +1,10 @@
-import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
-import { Link, Stack } from 'expo-router';
+import { Roboto_300Light, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
+import { Link, Stack, useRouter, } from 'expo-router';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View, } from 'react-native';
 
 export default function Kyc() {
+    const router = useRouter();
     const [fontsLoaded] = useFonts({
-      Roboto_400Regular,
       Roboto_300Light,
       Roboto_700Bold,
       Roboto_500Medium,
@@ -52,7 +52,7 @@ export default function Kyc() {
                 //value={email}
                 style={styles.input}
               />
-              <Pressable style={styles.proceedButton}>
+              <Pressable style={styles.proceedButton} onPress={() => router.push("/emailModal")}>
                 <Text style={styles.proceed}>PROCEED</Text>
               </Pressable>
               <Text style={styles.fp}>Forgot Password?</Text>
