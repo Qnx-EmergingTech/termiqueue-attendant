@@ -1,18 +1,8 @@
-import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
 import { Link, Stack, useRouter } from 'expo-router';
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
   const router = useRouter();
-
-  const [fontsLoaded] = useFonts({
-    Roboto_400Regular,
-    Roboto_300Light,
-    Roboto_700Bold,
-    Roboto_500Medium,
-  });
-
-  if (!fontsLoaded) return null;
 
   return (
     <>

@@ -1,16 +1,8 @@
-import { View, Text, TextInput, Pressable, StyleSheet, Dimensions, Image } from 'react-native'
-import { Stack, Link } from 'expo-router';
-import { useFonts, Roboto_400Regular, Roboto_700Bold, Roboto_300Light, Roboto_500Medium } from "@expo-google-fonts/roboto";
+import { Link, Stack, useRouter } from 'expo-router';
+import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function Login() {
-  const [fontsLoaded] = useFonts({
-      Roboto_400Regular,
-      Roboto_300Light,
-      Roboto_700Bold,
-      Roboto_500Medium,
-    });
-  
-    if (!fontsLoaded) return null;
+  const router = useRouter();
 
   return (
     <>
@@ -43,7 +35,7 @@ export default function Login() {
           secureTextEntry
           style={styles.input}
         />
-        <Pressable style={styles.loginButton}>
+        <Pressable style={styles.loginButton} onPress={() => router.push("/home")}>
           <Text style={styles.login}>LOG IN</Text>
         </Pressable>
         <Text style={styles.fp}>Forgot Password?</Text>
@@ -80,15 +72,14 @@ const styles = StyleSheet.create({
     heading: {
        position: 'absolute',
        top: screenHeight * 0.25,    
-       left: '21%',                 
-       transform: [{ translateX: -50 }, { translateY: -10 }],
+       left: '11%',                 
        justifyContent: "center",
        alignItems: "center",
        width: screenWidth * 0.85,
         fontFamily: "Roboto_700Bold",
         fontSize: 28,
         textAlign: "center",
-        marginTop: 50,
+        marginTop: 30,
     },
     mid: {
         flex: 1, 
