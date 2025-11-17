@@ -1,30 +1,19 @@
-import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import {
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableWithoutFeedback,
-    View
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 
 export default function emailModal() {
   const router = useRouter();
   //const [visible, setVisible] = useState(true);
-  const [fontsLoaded] = useFonts({
-      Roboto_400Regular,
-      Roboto_300Light,
-      Roboto_700Bold,
-      Roboto_500Medium,
-    });
-  
-    if (!fontsLoaded) {
-    return null;
-  }
 
   const closeAndGoHome = () => {
     //setVisible(false);

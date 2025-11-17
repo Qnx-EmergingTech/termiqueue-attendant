@@ -1,19 +1,9 @@
-import { Roboto_300Light, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold, useFonts } from "@expo-google-fonts/roboto";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Stack, useRouter } from 'expo-router';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function Signup() {
   const router = useRouter();
-
-  const [fontsLoaded] = useFonts({
-      Roboto_400Regular,
-      Roboto_300Light,
-      Roboto_700Bold,
-      Roboto_500Medium,
-    });
-  
-    if (!fontsLoaded) return null;
 
   return (
     <>
@@ -89,15 +79,14 @@ const styles = StyleSheet.create({
     heading: {
        position: 'absolute',
        top: screenHeight * 0.25,    
-       left: '21%',                 
-       transform: [{ translateX: -50 }, { translateY: -10 }],
+       left: '9%',                 
        justifyContent: "center",
        alignItems: "center",
        width: screenWidth * 0.85,
         fontFamily: "Roboto_700Bold",
         fontSize: 28,
         textAlign: "center",
-        marginTop: 50,
+        marginTop: 30,
     },
     mid: {
         flex: 1, 
@@ -124,7 +113,7 @@ const styles = StyleSheet.create({
     privacy: {
         flexDirection: "row",
         alignSelf: "flex-start",
-        marginLeft: 10,
+        marginLeft: 15,
         marginTop: 20,
         alignItems: "center",
     },
@@ -134,7 +123,7 @@ const styles = StyleSheet.create({
         color: "#7583CA",
     },
     box: {
-        marginLeft: 90,
+        marginLeft: 120,
     },
     read: {
         fontFamily: "Roboto_500Medium",
