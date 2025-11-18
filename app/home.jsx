@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Location from "expo-location";
 import { Stack, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import { Menu, Provider as PaperProvider } from 'react-native-paper';
@@ -8,27 +9,47 @@ import { Menu, Provider as PaperProvider } from 'react-native-paper';
 export default function Home() {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
-  const region = {
-    latitude: 37.78825, 
-    longitude: -122.4324, 
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  };
-
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
+  const [region, setRegion] = useState(null);
 
   const handleLogout = async () => {
     closeMenu();
     router.replace("/logoutModal");
   };
 
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        alert("Permission to access location was denied.");
+        return;
+      }
+
+      await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Highest,
+          distanceInterval: 1,
+        },
+        (location) => {
+          setRegion({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
+      );
+    })();
+  }, []);
+
+
   return (
   <PaperProvider>
     <Stack.Screen options={{ headerShown: false }} />
 
     <View style={styles.container}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end', marginBottom: 10 }}>
           <View style={{ flex: 1 }}>
             <Text style={styles.greeting}>Hello, Seth!</Text>
             <Text style={styles.title}>Ready for your next trip?</Text>
@@ -66,14 +87,32 @@ export default function Home() {
           </Menu>
         </View>
       
-      <MapView style={styles.map} region={region}>
-        <Marker coordinate={region} title="You are here" />
-      </MapView>
+      {region && (
+          <MapView
+            style={styles.map}
+            region={region}
+            showsUserLocation
+            showsMyLocationButton
+          >
+            <Marker coordinate={region} title="You are here" />
+          </MapView>
+        )}
+        
+      <View style={styles.info}>
+        <Text style={styles.bus}>Cher, 0521</Text>
+        <Text style={styles.destination}>One Ayala, Terminal 2</Text>
+        <Text style={styles.destination}>Destination: Pacita</Text>
+      </View>
+
+      <View style={styles.box}>
+        <Text style={styles.status}>Set my status to active</Text>
+        <Text style={styles.time}>Terminal 2 - 45 mins</Text>
+      </View>
 
       <View>
-        <Text>Cher, 0521</Text>
-        <Text>One Ayala, Terminal 2</Text>
-        <Text>Destination: Pacita</Text>
+        <Pressable style={styles.activeButton}>
+          <Text style={styles.active}>Set status as active</Text>
+        </Pressable>
       </View>
 
     </View>
@@ -124,30 +163,52 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginBottom: 20,
     },
-    proceedButton: {
-    backgroundColor: "#8C8C8C",
+    activeButton: {
+    backgroundColor: "#096B72",
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 10,
-    marginTop: 10,
-    width: screenWidth * 0.83,
+    borderRadius: 38,
+    marginTop: 20,
+    width: screenWidth * 0.9,
     alignItems: "center",
     alignSelf: "center",
   },
-    textContainer: {
-    flexDirection: "column",
-    },
-    try: {
-        flex: 1,
-        justifyContent: "flex-end",
-        marginBottom: 40,
-    },
-    icon: {
-        width: 34,
-        height: 34,       
-        alignItems: "center",       
-        justifyContent: "center",
-    },
+  active: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 14,
+    color: "white",
+  },
+   box: {
+    backgroundColor: "#333242",   
+    borderRadius: 8,         
+    paddingVertical: 16,
+    paddingHorizontal: 24,             
+    marginTop: 30,
+    gap: 4,          
+  },
+   status: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 18,
+    color: "white",
+   },
+   time: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 11,
+    color: "white",
+   },
+   info: {
+    gap: 6,
+   },
+   bus: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 20,
+    color: "#096B72",
+   },
+   destination: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 16,
+    color: "black",
+   }
 });
