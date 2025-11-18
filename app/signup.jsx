@@ -1,61 +1,100 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Checkbox from 'expo-checkbox';
 import { Stack, useRouter } from 'expo-router';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { signUp } from './api/auth';
 
 export default function Signup() {
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
+  const [error, setError] = useState("");
+
+const handleProceed = async () => {
+  setError("");
+  if (!accepted) {
+    setError("Please accept the privacy policy.");
+    return;
+  }
+  if (password !== confirmPassword) {
+    setError("Passwords do not match.");
+    return;
+  }
+
+  const result = await signUp(email, password);
+  if (result.success) {
+    Alert.alert("Success", result.message);
+    router.replace("/kyc");
+  } else {
+    setError(result.message);
+  }
+};
 
   return (
     <>
       <Stack.Screen
         options={{
-          headerShown: true,           
-          headerTitle: '',              
-          headerTransparent: true,      
-          headerBackTitleVisible: false 
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
         }}
       />
-    
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image 
-          source={require('../assets/images/Blob.png')}
-          style={styles.image}
-        />
-        <Text style={styles.heading}>Create your account</Text>
 
-      <View style={styles.mid}>
-        <TextInput 
-          placeholder="Email address"
-          //value={email}
-          style={styles.input}
-        />
-        <TextInput 
-          placeholder="Password"
-          //value={password}
-          secureTextEntry
-          style={styles.input}
-        />
-        <TextInput 
-          placeholder="Confirm Password"
-          //value={confirmpass}
-          secureTextEntry
-          style={styles.input}
-        />
-        <View style={styles.privacy}>
-            <Text style={styles.read}>I have read the </Text>
-            <Text style={styles.policy}>Privacy Policy</Text>
-            <MaterialIcons name="check-box-outline-blank" size={24} color="#A1A4B2" style={styles.box}/>
-        </View>
-        <Pressable style={styles.loginButton} onPress={() => router.push("/kyc")}>
-          <Text style={styles.login}>PROCEED</Text>
-        </Pressable>
+      <View style={styles.container}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={require('../assets/images/Blob.png')}
+            style={styles.image}
+          />
+          <Text style={styles.heading}>Create your account</Text>
+
+          <View style={styles.mid}>
+            <TextInput
+              placeholder="Email address"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Password"
+              value={password}
+              secureTextEntry
+              onChangeText={setPassword}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              secureTextEntry
+              onChangeText={setConfirmPassword}
+              style={styles.input}
+            />
+
+            {error ? <Text style={{ color: 'red', marginTop: 5 }}>{error}</Text> : null}
+
+            <View style={styles.privacy}>
+              <Text style={styles.read}>I have read the </Text>
+              <Text style={styles.policy}>Privacy Policy</Text>
+              <Checkbox
+                value={accepted}
+                onValueChange={setAccepted}
+                tintColors={{ true: '#096B72', false: '#ccc' }}
+                style={styles.box}
+              />
+            </View>
+
+            <Pressable style={styles.loginButton} onPress={handleProceed}>
+              <Text style={styles.login}>PROCEED</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
-
-    </View>
     </>
-  )
+  );
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
