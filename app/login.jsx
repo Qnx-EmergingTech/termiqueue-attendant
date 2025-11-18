@@ -1,54 +1,55 @@
 import { Link, Stack, useRouter } from 'expo-router';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { logIn } from './_api/auth';
 
 export default function Login() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    setError("");
+    const result = await logIn(email, password);
+
+    if (result.success) {
+      Alert.alert("Success", result.message);
+      router.replace("/home"); 
+    } else {
+      setError(result.message);
+    }
+  };
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,           
-          headerTitle: '',              
-          headerTransparent: true,      
-          headerBackTitleVisible: false 
-        }}
-      />
-    
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image 
-          source={require('../assets/images/Blob.png')}
-          style={styles.image}
-        />
-        <Text style={styles.heading}>Welcome Back!</Text>
+      <Stack.Screen options={{ headerShown: true, headerTitle: '', headerTransparent: true, headerBackTitleVisible: false }} />
+      <View style={styles.container}>
+        <View style={styles.imageContainer}>
+          <Image source={require('../assets/images/Blob.png')} style={styles.image} />
+          <Text style={styles.heading}>Welcome Back!</Text>
 
-      <View style={styles.mid}>
-        <TextInput 
-          placeholder="Email address"
-          //value={email}
-          style={styles.input}
-        />
-        <TextInput 
-          placeholder="Password"
-          //value={password}
-          secureTextEntry
-          style={styles.input}
-        />
-        <Pressable style={styles.loginButton} onPress={() => router.push("/home")}>
-          <Text style={styles.login}>LOG IN</Text>
-        </Pressable>
-        <Text style={styles.fp}>Forgot Password?</Text>
+          <View style={styles.mid}>
+            <TextInput placeholder="Email address" value={email} onChangeText={setEmail} style={styles.input} />
+            <TextInput placeholder="Password" value={password} secureTextEntry onChangeText={setPassword} style={styles.input} />
+
+            {error ? <Text style={{ color: 'red', marginTop: 5 }}>{error}</Text> : null}
+
+            <Pressable style={styles.loginButton} onPress={handleLogin}>
+              <Text style={styles.login}>LOG IN</Text>
+            </Pressable>
+
+            <Text style={styles.fp}>Forgot Password?</Text>
+          </View>
+        </View>
+
+        <View style={styles.bottom}>
+          <Text style={styles.bot}>DON'T HAVE AN ACCOUNT? </Text>
+          <Link href="/signup" style={styles.signUp}>SIGN UP</Link>
         </View>
       </View>
-
-      <View style={styles.bottom}>
-        <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
-        <Link href="/signup" style={styles.signUp}>SIGN UP</Link>
-      </View>
-    </View>
     </>
-  )
+  );
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
