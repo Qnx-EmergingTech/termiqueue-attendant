@@ -1,63 +1,98 @@
 import { Link, Stack, useRouter } from 'expo-router';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View, } from 'react-native';
+import { useState } from 'react';
+import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { createProfile } from './_api/profile';
 
 export default function Kyc() {
-    const router = useRouter();
-    
+  const router = useRouter();
+
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [address, setAddress] = useState("");
+  const [error, setError] = useState("");
+
+  const handleProceed = async () => {
+    setError("");
+    if (!firstName || !lastName || !address) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    const result = await createProfile({
+      first_name: firstName,
+      middle_name: middleName,
+      last_name: lastName,
+      address: address,
+    });
+
+    if (result.success) {
+      router.replace("/login");
+    } else {
+      setError(result.message);
+    }
+  };
+
   return (
     <>
       <Stack.Screen
         options={{
-          headerShown: true,           
-          headerTitle: '',              
-          headerTransparent: true,      
-          headerBackTitleVisible: false 
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false
         }}
       />
 
-    <View style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.imageContainer}>
-            <Image 
-                source={require('../assets/images/Blob.png')}
-                style={styles.image}
-            />
-            <Text style={styles.heading}>Create your profile</Text>
-      
-            <View style={styles.mid}>
-              <TextInput 
-                placeholder="First name"
-                //value={email}
-                style={styles.input}
-              />
-              <TextInput 
-                placeholder="Middle name (optional)"
-                //value={email}
-                style={styles.input}
-              />
-              <TextInput 
-                placeholder="Last name"
-                //value={email}
-                style={styles.input}
-              />
-              <TextInput 
-                placeholder="Full address"
-                //value={email}
-                style={styles.input}
-              />
-              <Pressable style={styles.proceedButton} onPress={() => router.push("/login")}>
-                <Text style={styles.proceed}>PROCEED</Text>
-              </Pressable>
-              <Text style={styles.fp}>Forgot Password?</Text>
-            </View>
+          <Image 
+            source={require('../assets/images/Blob.png')}
+            style={styles.image}
+          />
+          <Text style={styles.heading}>Create your profile</Text>
 
-            <View style={styles.bottom}>
-                <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
-                <Link href="/signup" style={styles.signUp}>LOG IN</Link>
-            </View>
+          <View style={styles.mid}>
+            <TextInput 
+              placeholder="First name"
+              value={firstName}
+              onChangeText={setFirstName}
+              style={styles.input}
+            />
+            <TextInput 
+              placeholder="Middle name (optional)"
+              value={middleName}
+              onChangeText={setMiddleName}
+              style={styles.input}
+            />
+            <TextInput 
+              placeholder="Last name"
+              value={lastName}
+              onChangeText={setLastName}
+              style={styles.input}
+            />
+            <TextInput 
+              placeholder="Full address"
+              value={address}
+              onChangeText={setAddress}
+              style={styles.input}
+            />
+
+            {error ? <Text style={{ color: 'red', marginTop: 5 }}>{error}</Text> : null}
+
+            <Pressable style={styles.proceedButton} onPress={handleProceed}>
+              <Text style={styles.proceed}>PROCEED</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.bottom}>
+            <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
+            <Link href="/signup" style={styles.signUp}>LOG IN</Link>
+          </View>
         </View>
-    </View>
+      </View>
     </>
-  )
+  );
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');

@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createUserWithEmailAndPassword, getIdToken, signInWithEmailAndPassword, } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
+import { setToken } from "../../src/utils/authStorage";
 
 export const signUp = async (email, password) => {
   try {
@@ -8,6 +9,7 @@ export const signUp = async (email, password) => {
     const user = userCred.user;
 
     const idToken = await getIdToken(user, true);
+    await setToken(idToken);
     await AsyncStorage.setItem("userToken", idToken);
 
     return { success: true, message: "Account created successfully!" };
@@ -35,6 +37,7 @@ export const logIn = async (email, password) => {
     const userCred = await signInWithEmailAndPassword(auth, email, password);
     const user = userCred.user;
     const idToken = await getIdToken(user, true);
+    await setToken(idToken);
     await AsyncStorage.setItem("userToken", idToken);
 
     return { success: true, message: "Logged in successfully!" };
