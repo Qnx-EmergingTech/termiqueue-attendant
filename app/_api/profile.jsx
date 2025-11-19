@@ -16,8 +16,6 @@ export const createProfile = async ({ first_name, middle_name, last_name, addres
         is_privileged: true,
         in_queue: false
         };
-    console.log("Posting to:", `${API_BASE_URL}/profiles/`);
-    console.log("Request body:", body);
 
     const response = await fetch(`${API_BASE_URL}/profiles/`, {
       method: "POST",
@@ -27,11 +25,6 @@ export const createProfile = async ({ first_name, middle_name, last_name, addres
       },
       body: JSON.stringify(body)
     });
-
-    const data = await response.json();
-    console.log("Profile API response:", data);
-    console.log("Response status:", response.status);
-
 
     if (!response.ok) {
       const errorData = await response.json();
