@@ -1,6 +1,6 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { logIn } from './_api/auth';
 
 export default function Login() {
@@ -14,7 +14,6 @@ export default function Login() {
     const result = await logIn(email, password);
 
     if (result.success) {
-      Alert.alert("Success", result.message);
       router.replace("/home"); 
     } else {
       setError(result.message);

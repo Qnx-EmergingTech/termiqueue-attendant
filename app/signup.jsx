@@ -1,7 +1,7 @@
 import Checkbox from 'expo-checkbox';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { signUp } from './_api/auth';
 
 export default function Signup() {
@@ -26,7 +26,6 @@ const handleProceed = async () => {
 
   const result = await signUp(email, password);
   if (result.success) {
-    Alert.alert("Success", result.message);
     router.replace("/kyc");
   } else {
     setError(result.message);
