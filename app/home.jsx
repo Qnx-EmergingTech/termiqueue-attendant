@@ -43,6 +43,9 @@ export default function Home() {
     })();
   }, []);
 
+  const handleActive = () => {
+    router.push('/activeModal');
+  };
 
   return (
   <PaperProvider>
@@ -110,7 +113,7 @@ export default function Home() {
       </View>
 
       <View>
-        <Pressable style={styles.activeButton}>
+        <Pressable style={styles.activeButton} onPress={handleActive}>
           <Text style={styles.active}>Set status as active</Text>
         </Pressable>
       </View>
