@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import { Menu, Provider as PaperProvider } from 'react-native-paper';
+import { getMyBus } from "./_api/buses";
 
 export default function Home() {
   const router = useRouter();
@@ -12,14 +13,27 @@ export default function Home() {
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
   const [region, setRegion] = useState(null);
+  const [attendantName, setAttendantName] = useState("");
+  const [myBus, setMyBus] = useState(null);
+
 
   const handleLogout = async () => {
     closeMenu();
     router.replace("/logoutModal");
   };
 
-  useEffect(() => {
-    (async () => {
+    const fetchMyBus = async () => {
+      const result = await getMyBus();
+      if (result.success) {
+        setMyBus(result.bus);
+      } else {
+        console.log("No assigned bus.");
+      }
+    };
+
+useEffect(() => {
+  (async () => {
+    try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         alert("Permission to access location was denied.");
@@ -40,8 +54,19 @@ export default function Home() {
           });
         }
       );
-    })();
-  }, []);
+
+      const bus = await getMyBus();
+      console.log("Fetched my bus:", bus);
+
+      setMyBus(bus);
+      setAttendantName(bus?.attendant_name || "");
+
+    } catch (err) {
+      console.log("Error loading home:", err);
+    }
+  })();
+}, []);
+
 
 
   return (
@@ -51,7 +76,9 @@ export default function Home() {
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end', marginBottom: 10 }}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.greeting}>Hello, Seth!</Text>
+          <Text style={styles.greeting}>
+            Hello{attendantName ? `, ${attendantName}!` : "!"}
+          </Text>
             <Text style={styles.title}>Ready for your next trip?</Text>
           </View>
 
@@ -99,9 +126,21 @@ export default function Home() {
         )}
         
       <View style={styles.info}>
-        <Text style={styles.bus}>Cher, 0521</Text>
-        <Text style={styles.destination}>One Ayala, Terminal 2</Text>
-        <Text style={styles.destination}>Destination: Pacita</Text>
+        {myBus ? (
+          <>
+            <Text style={styles.bus}>
+              {myBus.bus_name}, {myBus.bus_number}
+            </Text>
+            <Text style={styles.destination}>
+              {myBus.origin}
+            </Text>
+            <Text style={styles.destination}>
+              Destination: {myBus.destination}
+            </Text>
+          </>
+        ) : (
+          <Text style={styles.destination}>Loading bus info...</Text>
+        )}
       </View>
 
       <View style={styles.box}>
