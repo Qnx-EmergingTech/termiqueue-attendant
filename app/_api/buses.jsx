@@ -19,8 +19,6 @@ export const getMyBus = async () => {
     });
 
     const data = await response.json();
-    console.log("My bus response:", data, "Status:", response.status);
-
     if (!response.ok) {
       throw new Error(data.detail || "Unable to fetch bus info");
     }
@@ -57,6 +55,36 @@ export const createBus = async (busData) => {
     }
 
     return { success: true, message: "Bus created successfully!", bus: data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+
+export const claimBus = async (busId) => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/claim`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = Array.isArray(data.detail)
+        ? data.detail.map(d => d.msg || JSON.stringify(d)).join(", ")
+        : data.detail || "Failed to claim bus";
+      throw new Error(msg);
+    }
+
+    return { success: true, message: "Bus claimed successfully!", bus: data };
   } catch (error) {
     return { success: false, message: error.message };
   }

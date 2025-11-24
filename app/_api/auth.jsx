@@ -9,7 +9,6 @@ export const signUp = async (email, password) => {
     const user = userCred.user;
     const idToken = await user.getIdToken(true);
     await setToken(idToken);
-    // await AsyncStorage.setItem("uid", user.uid);
 
     return { success: true, message: "Account created successfully!" };
 

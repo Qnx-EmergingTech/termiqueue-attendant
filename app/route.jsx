@@ -1,7 +1,7 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from "react";
 import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { createBus } from "../app/_api/buses";
+import { claimBus, createBus } from "../app/_api/buses";
 import { getUser } from "./utils/authStorage";
 
 export default function Route() {
@@ -23,43 +23,46 @@ export default function Route() {
     })();
   }, []);
 
-  const handleCreateBus = async () => {
-    if (!busName || !busNumber || !capacity || !destination) {
-      return Alert.alert("Validation Error", "All fields are required.");
-    }
+const handleCreateBus = async () => {
+  if (!busName || !busNumber || !capacity || !destination) {
+    return Alert.alert("Validation Error", "All fields are required.");
+  }
 
-    if (!user) {
-      return Alert.alert("Error", "User info not found.");
-    }
-    const attendantName = [user.first_name, user.middle_name, user.last_name]
-      .filter(Boolean) 
-      .join(" ");
+  if (!user) {
+    return Alert.alert("Error", "User info not found.");
+  }
 
-    const busData = {
-      bus_name: busName, 
-      bus_number: busNumber,
-      plate_number: busNumber,
-      priority_seat: 0,
-      capacity: Number(capacity),
-      origin: "One Ayala",
-      destination: destination,
-      status: "available", 
-      current_location: { 
-      lat: 0.0,
-      lon: 0.0
-  },
-      attendant_id: user.uid,
-      attendant_name: attendantName,
-    };
+  const attendantName = [user.first_name, user.middle_name, user.last_name]
+    .filter(Boolean)
+    .join(" ");
 
-    const res = await createBus(busData);
-    if (res.success) {
-      router.push("/home"); 
-    } 
-    else {
-      Alert.alert("Error", res.message || "Failed to create bus");
-    }
+  const busData = {
+    bus_name: busName,
+    bus_number: busNumber,
+    plate_number: busNumber, //will change it later
+    priority_seat: 0,
+    capacity: Number(capacity),
+    origin: "One Ayala",    //default to one ayala, all static data here, should be discuss with the team
+    destination: destination,
+    status: "available",
+    current_location: { lat: 0.0, lon: 0.0 },
+    attendant_id: user.uid,
+    attendant_name: attendantName,
   };
+
+  const res = await createBus(busData);
+  if (!res.success) {
+    return Alert.alert("Error", res.message);
+  }
+
+  const busId = res.bus.id; 
+  const claimRes = await claimBus(busId);
+  if (!claimRes.success) {
+    return Alert.alert("Error", claimRes.message);
+  }
+
+  router.push("/home");
+};
 
 
   return (

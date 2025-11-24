@@ -10,41 +10,39 @@ import { getMyBus } from "./_api/buses";
 export default function Home() {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
-  const openMenu = () => setMenuVisible(true);
-  const closeMenu = () => setMenuVisible(false);
   const [region, setRegion] = useState(null);
-  const [attendantName, setAttendantName] = useState("");
   const [myBus, setMyBus] = useState(null);
 
+  const openMenu = () => setMenuVisible(true);
+  const closeMenu = () => setMenuVisible(false);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     closeMenu();
     router.replace("/logoutModal");
   };
 
-    const fetchMyBus = async () => {
+  const fetchMyBus = async () => {
+    try {
       const result = await getMyBus();
-      if (result.success) {
+      if (result.success && result.bus) {
         setMyBus(result.bus);
       } else {
-        console.log("No assigned bus.");
+        console.log("No assigned bus or failed to fetch.");
       }
-    };
+    } catch (err) {
+      console.error("Error fetching my bus:", err);
+    }
+  };
 
-useEffect(() => {
-  (async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         alert("Permission to access location was denied.");
         return;
       }
-
       await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.Highest,
-          distanceInterval: 1,
-        },
+        { accuracy: Location.Accuracy.Highest, distanceInterval: 1 },
         (location) => {
           setRegion({
             latitude: location.coords.latitude,
@@ -54,20 +52,9 @@ useEffect(() => {
           });
         }
       );
-
-      const bus = await getMyBus();
-      console.log("Fetched my bus:", bus);
-
-      setMyBus(bus);
-      setAttendantName(bus?.attendant_name || "");
-
-    } catch (err) {
-      console.log("Error loading home:", err);
-    }
-  })();
-}, []);
-
-
+      await fetchMyBus();
+    })();
+  }, []);
 
   return (
   <PaperProvider>
@@ -77,7 +64,7 @@ useEffect(() => {
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end', marginBottom: 10 }}>
           <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>
-            Hello{attendantName ? `, ${attendantName}!` : "!"}
+            Hello{myBus?.attendant_name ? `, ${myBus.attendant_name}!` : "!"}
           </Text>
             <Text style={styles.title}>Ready for your next trip?</Text>
           </View>
