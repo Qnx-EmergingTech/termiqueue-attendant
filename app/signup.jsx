@@ -6,7 +6,6 @@ import { signUp } from './_api/auth';
 
 export default function Signup() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +25,10 @@ const handleProceed = async () => {
 
   const result = await signUp(email, password);
   if (result.success) {
-    router.replace("/kyc");
+      router.replace({
+        pathname: "/kyc",
+        params: { token: result.token }
+      });
   } else {
     setError(result.message);
   }

@@ -1,61 +1,130 @@
-import { Link, Stack, useRouter, } from 'expo-router';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View, } from 'react-native';
+import { Link, Stack, useRouter } from 'expo-router';
+import { useEffect, useState } from "react";
+import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { createBus } from "../app/_api/buses";
+import { getUser } from "./utils/authStorage";
 
-export default function Kyc() {
-    const router = useRouter();
-    
+export default function Route() {
+  const router = useRouter();
+  const [busName, setBusName] = useState("");
+  const [busNumber, setBusNumber] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [destination, setDestination] = useState("");
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const currentUser = await getUser();
+      if (!currentUser) {
+        Alert.alert("Error", "User not authenticated");
+        return;
+      }
+      setUser(currentUser);
+    })();
+  }, []);
+
+  const handleCreateBus = async () => {
+    if (!busName || !busNumber || !capacity || !destination) {
+      return Alert.alert("Validation Error", "All fields are required.");
+    }
+
+    if (!user) {
+      return Alert.alert("Error", "User info not found.");
+    }
+    const attendantName = [user.first_name, user.middle_name, user.last_name]
+      .filter(Boolean) 
+      .join(" ");
+
+    const busData = {
+      bus_name: busName, 
+      bus_number: busNumber,
+      plate_number: busNumber,
+      priority_seat: 0,
+      capacity: Number(capacity),
+      origin: "One Ayala",
+      destination: destination,
+      status: "available", 
+      current_location: { 
+      lat: 0.0,
+      lon: 0.0
+  },
+      attendant_id: user.uid,
+      attendant_name: attendantName,
+    };
+
+    const res = await createBus(busData);
+    if (res.success) {
+      router.push("/home"); 
+    } 
+    else {
+      Alert.alert("Error", res.message || "Failed to create bus");
+    }
+  };
+
+
   return (
     <>
       <Stack.Screen
         options={{
-          headerShown: true,           
-          headerTitle: '',              
-          headerTransparent: true,      
-          headerBackTitleVisible: false 
+          headerShown: true,
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false
         }}
       />
 
-    <View style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.imageContainer}>
-            <Image 
-                source={require('../assets/images/Blob.png')}
-                style={styles.image}
-            />
-            <Text style={styles.heading}>Set your bus route</Text>
-      
-            <View style={styles.mid}>
-              <TextInput 
-                placeholder="Bus company"
-                //value={email}
-                style={styles.input}
-              />
-              <TextInput 
-                placeholder="Bus number"
-                //value={email}
-                style={styles.input}
-              />
-              <TextInput 
-                placeholder="Max seat capacity"
-                //value={email}
-                style={styles.input}
-              />
-              <TextInput 
-                placeholder="Route"
-                //value={email}
-                style={styles.input}
-              />
-              <Pressable style={styles.proceedButton} onPress={() => router.push("/emailModal")}>
-                <Text style={styles.proceed}>PROCEED</Text>
-              </Pressable>
-              <Text style={styles.fp}>Forgot Password?</Text>
-            </View>
+          <Image 
+            source={require('../assets/images/Blob.png')}
+            style={styles.image}
+          />
 
-            <View style={styles.bottom}>
-                <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
-                <Link href="/signup" style={styles.signUp}>LOG IN</Link>
-            </View>
+          <Text style={styles.heading}>Set your bus route</Text>
+
+          <View style={styles.mid}>
+            <TextInput 
+              placeholder="Bus company"
+              value={busName}
+              onChangeText={setBusName}
+              style={styles.input}
+            />
+
+            <TextInput 
+              placeholder="Bus number"
+              value={busNumber}
+              onChangeText={setBusNumber}
+              style={styles.input}
+            />
+
+            <TextInput 
+              placeholder="Max seat capacity"
+              keyboardType="numeric"
+              value={capacity}
+              onChangeText={setCapacity}
+              style={styles.input}
+            />
+
+            <TextInput 
+              placeholder="Destination (ex. Pacita)"
+              value={destination}
+              onChangeText={setDestination}
+              style={styles.input}
+            />
+
+            <Pressable style={styles.proceedButton} onPress={handleCreateBus}>
+              <Text style={styles.proceed}>PROCEED</Text>
+            </Pressable>
+
+            <Text style={styles.fp}>Forgot Password?</Text>
+          </View>
+
+          <View style={styles.bottom}>
+            <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
+            <Link href="/signup" style={styles.signUp}>LOG IN</Link>
+          </View>
         </View>
-    </View>
+      </View>
     </>
   )
 }
