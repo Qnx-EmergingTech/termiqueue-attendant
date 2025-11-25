@@ -1,18 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createUserWithEmailAndPassword, getIdToken, signInWithEmailAndPassword, } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
-import { setToken } from "../../src/utils/authStorage";
+import { setToken } from "../utils/authStorage";
 
 export const signUp = async (email, password) => {
   try {
     const userCred = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCred.user;
-
-    const idToken = await getIdToken(user, true);
+    const idToken = await user.getIdToken(true);
     await setToken(idToken);
-    await AsyncStorage.setItem("userToken", idToken);
 
     return { success: true, message: "Account created successfully!" };
+
   } catch (err) {
     let message = "Something went wrong. Please try again.";
 
@@ -25,6 +24,12 @@ export const signUp = async (email, password) => {
         break;
       case "auth/weak-password":
         message = "Password must be at least 6 characters.";
+        break;
+      case "auth/operation-not-allowed":
+        message = "Email/password accounts are not enabled in Firebase Auth.";
+        break;
+      case "auth/network-request-failed":
+        message = "Network error. Please check your internet connection.";
         break;
     }
 

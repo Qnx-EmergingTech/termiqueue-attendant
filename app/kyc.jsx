@@ -1,24 +1,41 @@
 import { Link, Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { createProfile } from './_api/profile';
+import { getToken, setUser } from "./utils/authStorage";
 
 export default function Kyc() {
   const router = useRouter();
-
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
+  const [token, setTokenState] = useState(null);
 
-  const handleProceed = async () => {
-    setError("");
-    if (!firstName || !lastName || !address) {
-      setError("Please fill in all required fields.");
-      return;
-    }
+  useEffect(() => {
+    (async () => {
+      const idToken = await getToken();
+      if (!idToken) {
+        setError("User not authenticated. Please login again.");
+        return;
+      }
+      setTokenState(idToken);
+    })();
+  }, []);
 
+const handleProceed = async () => {
+  setError("");
+
+  if (!firstName.trim() || !lastName.trim() || !address.trim()) {
+    setError("All required fields (First name, Last name, Address) must be filled.");
+    return;
+  }
+  if (!token) {
+    setError("Authentication token not found. Please log in again.");
+    return;
+  }
+  try {
     const result = await createProfile({
       first_name: firstName,
       middle_name: middleName,
@@ -27,11 +44,27 @@ export default function Kyc() {
     });
 
     if (result.success) {
-      router.replace("/login");
+    await setUser({
+        uid: result.uid, 
+        first_name: firstName,
+        middle_name: middleName,
+        last_name: lastName,
+        address
+      });
+      router.replace("/route");
     } else {
-      setError(result.message);
+      setError(`Failed to create profile: ${result.message}`);
     }
-  };
+  } catch (err) {
+    if (err.message.includes("Network")) {
+      setError("Network error: Please check your internet connection.");
+    } else if (err.message.includes("User not authenticated")) {
+      setError("Authentication error: Your session has expired. Please log in again.");
+    } else {
+      setError(`Unexpected error: ${err.message}`);
+    }
+  }
+};
 
   return (
     <>
