@@ -1,4 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, signOut } from "firebase/auth";
+
 
 const TOKEN_KEY = "firebaseIdToken";
 const USER_KEY = "userData";
@@ -44,5 +46,18 @@ export const getUser = async () => {
   } catch (error) {
     console.error("Error retrieving user:", error);
     return null;
+  }
+};
+
+export const logoutUser = async () => {
+  try {
+    const auth = getAuth();
+    await signOut(auth);
+    await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Logout error:", error);
+    return { success: false, error };
   }
 };
