@@ -5,21 +5,29 @@ import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import { Menu, Provider as PaperProvider } from 'react-native-paper';
+import LogoutModal from "../app/logoutModal";
 import { getMyBus } from "./_api/buses";
 
 export default function Home() {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [logoutVisible, setLogoutVisible] = useState(false);
   const [region, setRegion] = useState(null);
   const [myBus, setMyBus] = useState(null);
-
+  
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
+  const toggleMenu = () => setMenuVisible(prev => !prev);
+
 
   const handleLogout = () => {
     closeMenu();
-    router.replace("/logoutModal");
+    setLogoutVisible(true); 
   };
+
+  const handleActive = () => {
+  console.log("Status set to active"); //TEMPORARY STUFF, BEFORE INTEGRATING SET BUS QUEUE TO ACTIVE
+};
 
   const fetchMyBus = async () => {
     try {
@@ -59,6 +67,10 @@ export default function Home() {
   return (
   <PaperProvider>
     <Stack.Screen options={{ headerShown: false }} />
+      <LogoutModal
+        visible={logoutVisible}
+        onClose={() => setLogoutVisible(false)}
+      />
 
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end', marginBottom: 10 }}>
@@ -77,7 +89,7 @@ export default function Home() {
             borderRadius: 5,
             }}
             anchor={
-              <Pressable onPress={openMenu} style={{ padding: 10 }}>
+              <Pressable onPress={toggleMenu} style={{ padding: 10 }}>
                 <Ionicons name="ellipsis-vertical" size={24} color="#A1A4B2" />
               </Pressable>
             }
