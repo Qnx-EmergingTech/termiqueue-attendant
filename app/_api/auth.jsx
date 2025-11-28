@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createUserWithEmailAndPassword, getIdToken, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
-import { logoutUser, setToken } from "../utils/authStorage";
+import { clearTripState, logoutUser, setToken } from "../utils/authStorage";
 
 export const signUp = async (email, password) => {
   try {
@@ -9,7 +9,7 @@ export const signUp = async (email, password) => {
     const user = userCred.user;
     const idToken = await user.getIdToken(true);
     await setToken(idToken);
-
+    await clearTripState();
     return { success: true, message: "Account created successfully!" };
 
   } catch (err) {
@@ -74,6 +74,7 @@ export const logIn = async (email, password) => {
 export const signOutAccount = async () => {
   try {
     const result = await logoutUser();
+    await clearTripState();
     return {
       success: result.success,
       message: "Logged out locally and Firebase session ended.",

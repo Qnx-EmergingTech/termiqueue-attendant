@@ -7,6 +7,8 @@ import MapView, { Marker } from 'react-native-maps';
 import { Menu, Provider as PaperProvider } from 'react-native-paper';
 import LogoutModal from "../app/logoutModal";
 import { getMyBus } from "./_api/buses";
+import { getTripState } from "./utils/authStorage";
+
 
 export default function Home() {
   const router = useRouter();
@@ -19,6 +21,10 @@ export default function Home() {
   const closeMenu = () => setMenuVisible(false);
   const toggleMenu = () => setMenuVisible(prev => !prev);
 
+  const [tripStatus, setTripStatus] = useState("idle");
+  const [actionButtonLabel, setActionButtonLabel] = useState("Set Active Status");
+
+
 
   const handleLogout = () => {
     closeMenu();
@@ -28,6 +34,13 @@ export default function Home() {
   const handleActive = () => {
   console.log("Status set to active"); //TEMPORARY STUFF, BEFORE INTEGRATING SET BUS QUEUE TO ACTIVE
 };
+
+    const loadTripState = async () => {
+      const state = await getTripState();
+      if (state?.tripStatus) setTripStatus(state.tripStatus);
+      if (state?.buttonLabel) setActionButtonLabel(state.buttonLabel);
+    };
+
 
   const fetchMyBus = async () => {
     try {
@@ -60,9 +73,18 @@ export default function Home() {
           });
         }
       );
+      await loadTripState();
       await fetchMyBus();
     })();
   }, []);
+
+      useEffect(() => {
+        if (!actionButtonLabel) {
+          if (tripStatus === "idle") setActionButtonLabel("Set Active Status");
+          else if (tripStatus === "active") setActionButtonLabel("Start Your Trip");
+          else if (tripStatus === "ongoing") setActionButtonLabel("Finish Trip");
+        }
+      }, [tripStatus]);
 
   return (
   <PaperProvider>
@@ -142,14 +164,36 @@ export default function Home() {
         )}
       </View>
 
-      <View style={styles.box}>
-        <Text style={styles.status}>Set my status to active</Text>
-        <Text style={styles.time}>Terminal 2 - 45 mins</Text>
-      </View>
+        <View style={styles.box}>
+            <Text style={styles.status}>
+              {tripStatus === "idle" ? "Waiting for you to arrive" :
+              tripStatus === "active" ? "Ready to start your trip" :
+              tripStatus === "ongoing" ? "On Going" :
+              "Waiting for you to arrive"}
+            </Text>
+
+
+          <Text style={styles.time}>
+            Terminal 2 - 45 mins
+          </Text>
+        </View>
 
       <View>
-        <Pressable style={styles.activeButton} onPress={handleActive}>
-          <Text style={styles.active}>Set status as active</Text>
+        <Pressable 
+          style={styles.activeButton} 
+          onPress={() => {
+            if (actionButtonLabel === "Set Active Status") {
+              router.push("/activeModal");   
+            } 
+            else if (actionButtonLabel === "Start Your Trip") {
+              router.push("/startModal");   
+            } 
+            else if (actionButtonLabel === "Finish Trip") {
+              router.push("/finishModal");  
+            }
+          }}
+        >
+          <Text style={styles.active}>{actionButtonLabel}</Text>
         </Pressable>
       </View>
 

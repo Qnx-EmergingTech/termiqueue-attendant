@@ -4,6 +4,8 @@ import { getAuth, signOut } from "firebase/auth";
 
 const TOKEN_KEY = "firebaseIdToken";
 const USER_KEY = "userData";
+const TRIP_STATUS_KEY = "tripStatus";
+const TRIP_BUTTON_KEY = "tripButtonLabel";
 
 export const setToken = async (token) => {
   try {
@@ -59,5 +61,37 @@ export const logoutUser = async () => {
   } catch (error) {
     console.error("Logout error:", error);
     return { success: false, error };
+  }
+};
+
+export const setTripState = async (status, buttonLabel) => {
+  try {
+    await AsyncStorage.multiSet([
+      [TRIP_STATUS_KEY, status],
+      [TRIP_BUTTON_KEY, buttonLabel],
+    ]);
+  } catch (e) {
+    console.error("Error saving trip state:", e);
+  }
+};
+
+export const getTripState = async () => {
+  try {
+    const values = await AsyncStorage.multiGet([TRIP_STATUS_KEY, TRIP_BUTTON_KEY]);
+    const tripStatus = values[0]?.[1] ?? "idle";
+    const buttonLabel = values[1]?.[1] ?? "Set Active Status";
+    return { tripStatus, buttonLabel };
+  } catch (e) {
+    console.error("Error loading trip state:", e);
+    return { tripStatus: "idle", buttonLabel: "Set Active Status" };
+  }
+};
+
+
+export const clearTripState = async () => {
+  try {
+    await AsyncStorage.multiRemove([TRIP_STATUS_KEY, TRIP_BUTTON_KEY]);
+  } catch (e) {
+    console.error("Error clearing trip state:", e);
   }
 };
