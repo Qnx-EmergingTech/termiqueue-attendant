@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
+import { setTripState } from "../app/utils/authStorage";
 
 
 export default function activeModal() {
@@ -18,13 +19,15 @@ export default function activeModal() {
 
   const closeAndGoHome = () => {
     setVisible(false);
-    setTimeout(() => router.replace('/home'), 150);
+    router.replace('/home');    
   };
 
-  const handleConfirm = () => {
-    setVisible(false);           
-    router.replace('/home');          
+  const handleConfirm = async () => {
+    await setTripState("ongoing", "Finish Trip");
+    setVisible(false);
+    router.replace("/home");
   };
+
 
   return (
     <>
