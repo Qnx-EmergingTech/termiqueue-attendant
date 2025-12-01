@@ -12,7 +12,7 @@ import SafeScreen from "../components/SafeScreen";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+export default function AppLayout() {
   const [fontsLoaded] = useFonts({
     Roboto_300Light,
     Roboto_400Regular,
@@ -30,7 +30,15 @@ export default function RootLayout() {
 
   return (
     <SafeScreen onLayout={onLayoutRootView}>
-      <Stack screenOptions={{ headerShown: true }} />
+      <Stack screenOptions={{
+        headerShown: false,
+      }}
+      onLayout={onLayoutRootView}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="signup" />
+        <Stack.Screen name="index" />
+      </Stack>
     </SafeScreen>
   );
 }

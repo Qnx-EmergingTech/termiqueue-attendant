@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from "react";
 import CustomizableModal from "../app/common/commonModal";
-import { setTripState } from "../app/utils/authStorage";
+import { setTripState } from "../utils/authStorage";
 
 export default function finishModal() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function finishModal() {
     const handleConfirm = async () => {
     await setTripState("idle", "Set Active Status");
     setVisible(false);
-    router.replace("/home");
+    router.replace("/(tabs)/home");
   };
 
   return (

@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { signOutAccount } from "../app/_api/auth";
+import { signOutAccount } from "../api/auth";
 import CustomizableModal from "../app/common/commonModal";
 
 export default function LogoutModal({ visible, onClose }) {
@@ -7,7 +7,7 @@ export default function LogoutModal({ visible, onClose }) {
 
   const handleClose = () => {
     setVisible(false);
-    setTimeout(() => router.replace("/home"), 150);
+    setTimeout(() => router.replace("/(tabs)/home"), 150);
   };
 
   const handleConfirm = async () => {

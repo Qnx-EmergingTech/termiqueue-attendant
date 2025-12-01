@@ -1,8 +1,8 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { createProfile } from './_api/profile';
-import { getToken, setUser } from "./utils/authStorage";
+import { createProfile } from '../api/profile';
+import { getToken, setUser } from "../utils/authStorage";
 
 export default function Kyc() {
   const router = useRouter();

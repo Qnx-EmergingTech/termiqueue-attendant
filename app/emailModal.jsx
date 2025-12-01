@@ -17,12 +17,12 @@ export default function emailModal() {
 
   const closeAndGoHome = () => {
     //setVisible(false);
-    setTimeout(() => router.replace('/home'), 150);
+    setTimeout(() => router.replace('/(tabs)/home'), 150);
   };
 
   const handleConfirm = () => {
     //setVisible(false);           
-    router.replace('/home');          
+    router.replace('/(tabs)/home');          
   };
 
   return (

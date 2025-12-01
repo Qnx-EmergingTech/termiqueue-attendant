@@ -1,8 +1,8 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from "react";
 import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { claimBus, createBus } from "../app/_api/buses";
-import { getUser } from "./utils/authStorage";
+import { claimBus, createBus } from "../api/buses";
+import { getUser } from "../utils/authStorage";
 
 export default function Route() {
   const router = useRouter();
