@@ -2,7 +2,7 @@ import Checkbox from 'expo-checkbox';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { signUp } from './_api/auth';
+import { signUp } from '../api/auth';
 
 export default function Signup() {
   const router = useRouter();

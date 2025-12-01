@@ -1,7 +1,7 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { logIn } from './_api/auth';
+import { logIn } from '../api/auth';
 
 export default function Login() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function Login() {
     const result = await logIn(email, password);
 
     if (result.success) {
-      router.replace("/home"); 
+      router.replace("/(tabs)/home"); 
     } else {
       setError(result.message);
     }

@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableWithoutFeedback,
-    View
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 
@@ -18,12 +18,12 @@ export default function statusModal() {
 
   const closeAndGoHome = () => {
     setVisible(false);
-    setTimeout(() => router.replace('/home'), 150);
+    setTimeout(() => router.replace('/(tabs)/home'), 150);
   };
 
   const handleConfirm = () => {
     setVisible(false);           
-    router.replace('/home');          
+    router.replace('/(tabs)/home');          
   };
 
   return (

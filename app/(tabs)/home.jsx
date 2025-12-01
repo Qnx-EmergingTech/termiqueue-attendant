@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import { Menu, Provider as PaperProvider } from 'react-native-paper';
-import LogoutModal from "../app/logoutModal";
-import { getMyBus } from "./_api/buses";
-import { getTripState } from "./utils/authStorage";
+import { getMyBus } from "../../api/buses";
+import { getTripState } from "../../utils/authStorage";
+import LogoutModal from "../logoutModal";
 
 
 export default function Home() {
@@ -88,7 +88,6 @@ export default function Home() {
 
   return (
   <PaperProvider>
-    <Stack.Screen options={{ headerShown: false }} />
       <LogoutModal
         visible={logoutVisible}
         onClose={() => setLogoutVisible(false)}
