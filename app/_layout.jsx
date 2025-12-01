@@ -8,7 +8,8 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback } from "react";
-import SafeScreen from "../components/SafeScreen";
+// remove safescreen for top white space, temporary solution?
+// import SafeScreen from "../components/SafeScreen";   
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,7 +30,7 @@ export default function AppLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeScreen onLayout={onLayoutRootView}>
+    // <SafeScreen onLayout={onLayoutRootView}>
       <Stack screenOptions={{
         headerShown: false,
       }}
@@ -39,6 +40,6 @@ export default function AppLayout() {
         <Stack.Screen name="signup" />
         <Stack.Screen name="index" />
       </Stack>
-    </SafeScreen>
+  //  </SafeScreen> 
   );
 }
