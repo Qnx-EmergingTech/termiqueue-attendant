@@ -8,7 +8,8 @@ export default function addpassengerModal() {
 
 
     const handleConfirm = async () => {
-    setVisible(false);
+    //setVisible(false);
+    router.push("/scanner");
   };
 
     const closeAndGoHome = () => {
