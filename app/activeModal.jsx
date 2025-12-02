@@ -23,7 +23,7 @@ export default function activeModal() {
   };
 
   const handleConfirm = async () => {
-    await setTripState("ongoing", "Finish Trip");
+    await setTripState("active", "Start Your Trip");
     setVisible(false);
     router.replace("/(tabs)/home");
   };

@@ -13,12 +13,18 @@ export default function startModal() {
     router.replace("/(tabs)/home");
   };
 
+    const closeAndGoHome = () => {
+    setVisible(false);
+    router.replace('/(tabs)/home');    
+  };
+
+
 
   return (
     <CustomizableModal
       visible={visible}
-      onClose={() => setVisible(false)}
-      onCancel={() => setVisible(false)}
+      onClose={closeAndGoHome}
+      onCancel={closeAndGoHome}
       onConfirm={handleConfirm}
 
       title="Want to start your trip?"
