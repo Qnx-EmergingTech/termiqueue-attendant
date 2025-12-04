@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from "react";
 import CustomizableModal from "../app/common/commonModal";
 
-export default function AddPassengerModal() {
+export default function ScanModal() {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
 
@@ -10,14 +10,14 @@ export default function AddPassengerModal() {
     const handleConfirm = async () => {
     setVisible(false);
     setTimeout(() => {
-      router.push("/scanModal");
+      router.push("/qr");
     }, 10);
   };
 
     const closeAndGoHome = () => {
     setVisible(false);
     setTimeout(() => {
-      router.push("/(tabs)/scan");
+      router.push("/addpassengerModal");
     }, 10);
   };
 
@@ -28,10 +28,10 @@ export default function AddPassengerModal() {
       onCancel={closeAndGoHome}
       onConfirm={handleConfirm}
 
-      title="Add Passenger"
-      message="Please select if the passenger is from the QNEXT App or Walk In"
-      confirmText="Scan"
-      cancelText="Walk In"
+      title="Scan QR"
+      message="Scan passenger QR to update the passenger count"
+      confirmText="Confirm"
+      cancelText="Cancel"
       icon={require('../assets/images/success.png')}
       primaryColor="#096B72" 
     />
