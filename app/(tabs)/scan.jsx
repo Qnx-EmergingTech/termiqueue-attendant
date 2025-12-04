@@ -1,119 +1,134 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { useEffect, useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import { Provider as PaperProvider } from 'react-native-paper';
 
 export default function Scan() {
-  const [permission, requestPermission] = useCameraPermissions();
-  const [scannedCodes, setScannedCodes] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
-  }, [permission]);
-
-  if (!permission) return null;
-
-  if (!permission.granted) {
-    return <View><Text>Camera permission required.</Text></View>;
-  }
-
-  const handleBarcodeScanned = ({ data }) => {
-    if (isProcessing) return;
-    setIsProcessing(true);
-
-    if (scannedCodes.includes(data)) {
-      Alert.alert("Already Scanned", "This QR code was already scanned.", [
-        { text: "OK", onPress: () => setIsProcessing(false) },
-      ]);
-      return;
-    }
-
-    setScannedCodes((prev) => [...prev, data]);
-    Alert.alert("Success!", "QR code scanned successfully.", [
-      { text: "OK", onPress: () => setIsProcessing(false) },
-    ]);
-  };
+  const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <CameraView
-        style={StyleSheet.absoluteFill}
-        facing="back"
-        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        onBarcodeScanned={handleBarcodeScanned}
-      />
+  <PaperProvider>
 
-      {/* Overlay with corner borders */}
-      <View style={styles.overlay}>
-        <View style={styles.scanBox}>
-          {/* 4 Corner Borders */}
-          <View style={[styles.corner, styles.topLeft]} />
-          <View style={[styles.corner, styles.topRight]} />
-          <View style={[styles.corner, styles.bottomLeft]} />
-          <View style={[styles.corner, styles.bottomRight]} />
+    <View style={styles.container}>
+      <Text style={styles.header}>Scan</Text>
+
+      <View style={styles.info1}>
+          <Ionicons name="bus-outline" size={170} color="#096B72" style={styles.icon}/>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.bus}>Cher, 0521</Text>
+            <Text style={styles.details}>One Ayala, Terminal 2</Text>
+            <Text style={styles.details}>Destination: Pacita</Text>
+            <Text style={styles.details}>Capacity: 12/45</Text>
+            <Text style={styles.details}>Status: Waiting for passengers</Text>
+          </View>
         </View>
+
+      <View style={styles.info}>
+            <Text style={styles.vehicle}>Vehicle Info</Text>
+            <Text style={styles.details}>Bus Plate Number: PGH522</Text>
+            <Text style={styles.details}>Last passenger scanned: 5:38 PM</Text>
+            <Text style={styles.details}>No Activity for 10 mins</Text>
+            <Text style={styles.details}>You're 5 mins behind schedule. Consider starting route soon</Text>
       </View>
-    </View>
+
+        <View style={styles.bottomContainer}>
+          <View style={styles.box}>
+            <Text style={styles.status}>Scan Passenger</Text>
+            <Text style={styles.time}>Route - Pacita</Text>
+          </View>
+
+          <Pressable style={styles.activeButton} onPress={() => {
+              router.push("/addpassengerModal");
+            }}>
+            <Text style={styles.active}>Add A Passenger</Text>
+          </Pressable>
+        </View>
+   </View>
+  </PaperProvider>
   );
 }
 
-const BORDER_COLOR = "white";
-const BORDER_SIZE = 40;
-const BORDER_WIDTH = 4;
-
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "black",
+    container: {
+        flex: 1,
+        backgroundColor: "white",
+        padding: 20,
+    },
+     header: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 20,
   },
-
-  overlay: {
-    flex: 1,
+  icon: {
+    marginRight: 10,
+    marginBottom: 20,
+  },
+    activeButton: {
+    backgroundColor: "#096B72",
+    flexDirection: "row",
     justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 38,
+    marginTop: 20,
+    width: screenWidth * 0.9,
     alignItems: "center",
+    alignSelf: "center",
   },
-
-  scanBox: {
-    width: 300,
-    height: 600,
-    justifyContent: "center",
+  active: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 14,
+    color: "white",
+  },
+   box: {
+    backgroundColor: "#333242",   
+    borderRadius: 8,         
+    paddingVertical: 16,
+    paddingHorizontal: 24,             
+    marginTop: 30,
+    marginBottom: 6,          
+  },
+   status: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 18,
+    color: "white",
+   },
+   time: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 11,
+    color: "white",
+   },
+   info: {
+    marginBottom: 6,
+   },
+   info1: {
+    flexDirection: "row",
     alignItems: "center",
-  },
-
-  corner: {
-    position: "absolute",
-    width: BORDER_SIZE,
-    height: BORDER_SIZE,
-    borderColor: BORDER_COLOR,
-  },
-
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderLeftWidth: BORDER_WIDTH,
-    borderTopWidth: BORDER_WIDTH,
-  },
-
-  topRight: {
-    top: 0,
-    right: 0,
-    borderRightWidth: BORDER_WIDTH,
-    borderTopWidth: BORDER_WIDTH,
-  },
-
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderLeftWidth: BORDER_WIDTH,
-    borderBottomWidth: BORDER_WIDTH,
-  },
-
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderRightWidth: BORDER_WIDTH,
-    borderBottomWidth: BORDER_WIDTH,
+    justifyContent: "space-between",
+    marginBottom: 6,
+    
+   },
+   bus: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 20,
+    color: "#096B72",
+    marginBottom: 5,
+   },
+   details: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 16,
+    color: "black",
+    marginBottom: 5,
+   },
+   vehicle: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 20,
+    color: "black",
+    marginBottom: 5,
+   },
+    bottomContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
   },
 });
