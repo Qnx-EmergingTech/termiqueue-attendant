@@ -1,10 +1,39 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import { Provider as PaperProvider } from 'react-native-paper';
+import { getMyBus } from "../../api/buses";
 
 export default function Scan() {
   const router = useRouter();
+  const [myBus, setMyBus] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  const fetchMyBus = async () => {
+    const result = await getMyBus();
+    if (result.success && result.bus) {
+      setMyBus(result.bus);
+    }
+    setLoading(false);
+  };
+
+  fetchMyBus();
+}, []);
+
+    const getBusStatusText = (status) => {
+  switch (status) {
+    case "available":
+      return "Waiting for passengers";
+    case "active":
+      return "Ongoing trip";
+    case "offline":
+      return "Not operating";
+    default:
+      return "Unknown";
+  }
+};
 
   return (
   <PaperProvider>
@@ -15,26 +44,51 @@ export default function Scan() {
       <View style={styles.info1}>
           <Ionicons name="bus-outline" size={170} color="#096B72" style={styles.icon}/>
           <View style={{ flex: 1 }}>
-            <Text style={styles.bus}>Cher, 0521</Text>
-            <Text style={styles.details}>One Ayala, Terminal 2</Text>
-            <Text style={styles.details}>Destination: Pacita</Text>
-            <Text style={styles.details}>Capacity: 12/45</Text>
-            <Text style={styles.details}>Status: Waiting for passengers</Text>
+            {loading ? (
+              <Text style={styles.details}>Loading bus info...</Text>
+            ) : myBus ? (
+              <>
+                <Text style={styles.bus}>{myBus.bus_name}, {myBus.bus_number}</Text>
+                <Text style={styles.details}>{myBus.origin}</Text>
+                <Text style={styles.details}>Destination: {myBus.destination}</Text>
+                <Text style={styles.details}>
+                  Capacity: {myBus.priority_seat}/{myBus.capacity}
+                </Text>
+                <Text style={styles.details}>
+                  Status: {getBusStatusText(myBus.status)}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.details}>No assigned bus</Text>
+            )}
+
           </View>
         </View>
 
-      <View style={styles.info}>
+          <View style={styles.info}>
             <Text style={styles.vehicle}>Vehicle Info</Text>
-            <Text style={styles.details}>Bus Plate Number: PGH522</Text>
-            <Text style={styles.details}>Last passenger scanned: 5:38 PM</Text>
-            <Text style={styles.details}>No Activity for 10 mins</Text>
-            <Text style={styles.details}>You're 5 mins behind schedule. Consider starting route soon</Text>
-      </View>
+            <Text style={styles.details}>
+              Bus Plate Number: {myBus?.plate_number || "—"}
+            </Text>
+            {/* Last passenger scanned — API not available yet */}
+            <Text style={styles.details}>
+              Last passenger scanned: {myBus?.lastScanTime || "4:40pm"}
+            </Text>
+            {/* Idle duration placeholder */}
+            <Text style={styles.details}>
+              No Activity for {myBus?.idleDuration || "5 minutes"}
+            </Text>
+            {/* Schedule hint — static for now */}
+            <Text style={styles.details}>
+              You're {myBus?.delayTime || "5 minutes"} behind schedule. Consider starting route soon
+            </Text>
+          </View>
+
 
         <View style={styles.bottomContainer}>
           <View style={styles.box}>
             <Text style={styles.status}>Scan Passenger</Text>
-            <Text style={styles.time}>Route - Pacita</Text>
+            <Text style={styles.time}>Route - {myBus?.destination || "None"}</Text>
           </View>
 
           <Pressable style={styles.activeButton} onPress={() => {

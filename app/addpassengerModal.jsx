@@ -17,6 +17,13 @@ export default function AddPassengerModal() {
     const closeAndGoHome = () => {
     setVisible(false);
     setTimeout(() => {
+      router.push("/scan");
+    }, 10);
+  };
+
+    const handleNext = () => {
+    setVisible(false);
+    setTimeout(() => {
       router.push("/walkinModal");
     }, 10);
   };
@@ -25,7 +32,7 @@ export default function AddPassengerModal() {
     <CustomizableModal
       visible={visible}
       onClose={closeAndGoHome}
-      onCancel={closeAndGoHome}
+      onCancel={handleNext}
       onConfirm={handleConfirm}
 
       title="Add Passenger"
