@@ -17,9 +17,10 @@ export default function ScanModal() {
     const closeAndGoHome = () => {
     setVisible(false);
     setTimeout(() => {
-      router.push("/addpassengerModal");
+      router.push("/scan");
     }, 10);
   };
+
 
   return (
     <CustomizableModal

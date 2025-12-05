@@ -14,10 +14,18 @@ export default function WalkInModal() {
     }, 10);
   };
 
-    const closeAndGoHome = () => {
+// same logic for Regular, but soon will adjust for Elderly/PWD?
+    const handleNext = () => {
     setVisible(false);
     setTimeout(() => {
       router.push("/qr");
+    }, 10);
+  };
+  
+      const closeAndGoHome = () => {
+    setVisible(false);
+    setTimeout(() => {
+      router.push("/scan");
     }, 10);
   };
 
@@ -25,7 +33,7 @@ export default function WalkInModal() {
     <CustomizableModal
       visible={visible}
       onClose={closeAndGoHome}
-      onCancel={closeAndGoHome}
+      onCancel={handleNext}
       onConfirm={handleConfirm}
 
       title="What type of walk in passenger?"
