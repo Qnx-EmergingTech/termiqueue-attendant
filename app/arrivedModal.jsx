@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 import { setTripState } from "../utils/authStorage";
 
-
-export default function activeModal() {
+export default function arrivedModal() {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
 
@@ -23,11 +22,10 @@ export default function activeModal() {
   };
 
   const handleConfirm = async () => {
-    await setTripState("active", "Update Status");
+    await setTripState("arrived", "Start Your Trip");
     setVisible(false);
     router.replace("/(tabs)/home");
   };
-
 
   return (
     <>
@@ -49,9 +47,9 @@ export default function activeModal() {
                 source={require('../assets/images/success.png')}
                 style={styles.icon}
               />
-              <Text style={styles.title}>Are you sure you want to set your status to active?</Text>
+              <Text style={styles.title}>Want to set your status to "has Arrived"?</Text>
               <Text style={styles.text}>
-                Setting your status to active will let people on queue know that you are on your way to the terminal
+                Setting your status to “has arrive” will let people on queue know that you are already and waiting for them to board
               </Text>
 
               <Pressable style={styles.button} onPress={handleConfirm}>

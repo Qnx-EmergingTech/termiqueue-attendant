@@ -81,7 +81,8 @@ export default function Home() {
       useEffect(() => {
         if (!actionButtonLabel) {
           if (tripStatus === "idle") setActionButtonLabel("Set Active Status");
-          else if (tripStatus === "active") setActionButtonLabel("Start Your Trip");
+          else if (tripStatus === "active") setActionButtonLabel("Update Status");
+          else if (tripStatus === "arrived") setActionButtonLabel("Start Your Trip");
           else if (tripStatus === "ongoing") setActionButtonLabel("Finish Trip");
         }
       }, [tripStatus]);
@@ -166,7 +167,8 @@ export default function Home() {
         <View style={styles.box}>
             <Text style={styles.status}>
               {tripStatus === "idle" ? "Waiting for you to arrive" :
-              tripStatus === "active" ? "Ready to start your trip" :
+              tripStatus === "active" ? "You are now active, and on your way!" :
+              tripStatus === "arrived" ? "Ready to start your trip" :
               tripStatus === "ongoing" ? "On Going" :
               "Waiting for you to arrive"}
             </Text>
@@ -183,6 +185,9 @@ export default function Home() {
           onPress={() => {
             if (actionButtonLabel === "Set Active Status") {
               router.push("/activeModal");   
+            } 
+            else if (actionButtonLabel === "Update Status") {
+              router.push("/arrivedModal");   
             } 
             else if (actionButtonLabel === "Start Your Trip") {
               router.push("/startModal");   
