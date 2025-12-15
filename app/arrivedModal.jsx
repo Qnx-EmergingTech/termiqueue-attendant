@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Image,
@@ -10,22 +10,31 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
+import { arriveBus } from "../api/buses";
 import { setTripState } from "../utils/authStorage";
 
 export default function arrivedModal() {
   const router = useRouter();
+  const { busId } = useLocalSearchParams();
   const [visible, setVisible] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const closeAndGoHome = () => {
     setVisible(false);
     router.replace('/(tabs)/home');    
   };
+const handleConfirm = async () => {
+  setLoading(true);
+  const result = await arriveBus(busId);
 
-  const handleConfirm = async () => {
+  if (result.success) {
     await setTripState("arrived", "Start Your Trip");
-    setVisible(false);
     router.replace("/(tabs)/home");
-  };
+  } else {
+    alert(result.message);
+  }
+  setLoading(false);
+};
 
   return (
     <>
@@ -51,11 +60,18 @@ export default function arrivedModal() {
               <Text style={styles.text}>
                 Setting your status to “has arrive” will let people on queue know that you are already and waiting for them to board
               </Text>
-
-              <Pressable style={styles.button} onPress={handleConfirm}>
-                <Text style={styles.cbutton}>Confirm</Text>
-              </Pressable>
-
+            <Pressable
+              style={[
+                styles.button,
+                loading && { opacity: 0.6 },
+              ]}
+              onPress={handleConfirm}
+              disabled={loading}
+            >
+              <Text style={styles.cbutton}>
+                {loading ? "Updating..." : "Confirm"}
+              </Text>
+            </Pressable>
               <Pressable style={styles.cancelButton} onPress={handleConfirm}>
                 <Text style={styles.cancel}>Cancel</Text>
               </Pressable>

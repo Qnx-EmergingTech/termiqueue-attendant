@@ -16,13 +16,14 @@ export default function Home() {
   const [logoutVisible, setLogoutVisible] = useState(false);
   const [region, setRegion] = useState(null);
   const [myBus, setMyBus] = useState(null);
-  
+  const [isFetchingBus, setIsFetchingBus] = useState(true);
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
   const toggleMenu = () => setMenuVisible(prev => !prev);
-
   const [tripStatus, setTripStatus] = useState("idle");
   const [actionButtonLabel, setActionButtonLabel] = useState("Set Active Status");
+  const isButtonDisabled = isFetchingBus;
+
 
 
 
@@ -43,6 +44,7 @@ export default function Home() {
 
 
   const fetchMyBus = async () => {
+    setIsFetchingBus(true);
     try {
       const result = await getMyBus();
       if (result.success && result.bus) {
@@ -52,7 +54,9 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Error fetching my bus:", err);
-    }
+    }finally {
+    setIsFetchingBus(false);
+  }
   };
 
   useEffect(() => {
@@ -181,19 +185,32 @@ export default function Home() {
 
       <View>
         <Pressable 
-          style={styles.activeButton} 
+            disabled={isButtonDisabled}
+            style={[
+              styles.activeButton,
+              isButtonDisabled && { opacity: 0.5 },
+            ]}
           onPress={() => {
             if (actionButtonLabel === "Set Active Status") {
               router.push("/activeModal");   
             } 
             else if (actionButtonLabel === "Update Status") {
-              router.push("/arrivedModal");   
-            } 
+              router.push({
+                pathname: "/arrivedModal",
+                params: { busId: myBus.id },
+              });
+            }
             else if (actionButtonLabel === "Start Your Trip") {
-              router.push("/startModal");   
+              router.push({
+                pathname: "/startModal",
+                params: { busId: myBus.id },
+              });
             } 
             else if (actionButtonLabel === "Finish Trip") {
-              router.push("/finishModal");  
+              router.push({
+                pathname: "/finishModal",
+                params: { busId: myBus.id },
+              }); 
             }
           }}
         >
