@@ -155,3 +155,38 @@ export const departBus = async (busId) => {
     return { success: false, message: error.message };
   }
 };
+
+export const updateBusStatus = async (busId, status) => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}`);
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = Array.isArray(data.detail)
+        ? data.detail.map(d => d.msg).join(", ")
+        : data.detail || "Failed to update bus";
+      throw new Error(msg);
+    }
+
+    return { success: true, bus: data };
+  } catch (error) {
+    console.error("Update bus error:", error);
+    return { success: false, message: error.message };
+  }
+};
