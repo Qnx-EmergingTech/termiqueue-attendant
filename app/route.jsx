@@ -8,6 +8,7 @@ export default function Route() {
   const router = useRouter();
   const [busName, setBusName] = useState("");
   const [busNumber, setBusNumber] = useState("");
+  const [plateNumber, setplateNumber] = useState("");
   const [capacity, setCapacity] = useState("");
   const [destination, setDestination] = useState("");
   const [user, setUser] = useState(null);
@@ -24,7 +25,7 @@ export default function Route() {
   }, []);
 
 const handleCreateBus = async () => {
-  if (!busName || !busNumber || !capacity || !destination) {
+  if (!busName || !busNumber || !capacity || !destination || !plateNumber) {
     return Alert.alert("Validation Error", "All fields are required.");
   }
 
@@ -39,7 +40,7 @@ const handleCreateBus = async () => {
   const busData = {
     bus_name: busName,
     bus_number: busNumber,
-    plate_number: busNumber, //will change it later
+    plate_number: plateNumber, 
     priority_seat: 0,
     capacity: Number(capacity),
     origin: "One Ayala",    //default to one ayala, all static data here, should be discuss with the team
@@ -97,6 +98,13 @@ const handleCreateBus = async () => {
               placeholder="Bus number"
               value={busNumber}
               onChangeText={setBusNumber}
+              style={styles.input}
+            />
+
+            <TextInput 
+              placeholder="Plate number"
+              value={plateNumber}
+              onChangeText={setplateNumber}
               style={styles.input}
             />
 
@@ -165,7 +173,7 @@ const styles = StyleSheet.create({
     },
     mid: {
         flex: 1, 
-        marginTop: 100,
+        marginTop: 150,
         justifyContent: "center",
         alignItems: "center",
         paddingHorizontal: 20,
