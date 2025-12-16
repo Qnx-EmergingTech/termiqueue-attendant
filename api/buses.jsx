@@ -190,3 +190,32 @@ export const updateBusStatus = async (busId, status) => {
     return { success: false, message: error.message };
   }
 };
+
+export const getAttendantPassengers = async () => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+
+    const url = joinUrl(API_BASE_URL, "buses/attendant/passengers");
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = data.detail || "Failed to fetch passengers";
+      throw new Error(msg);
+    }
+
+    return { success: true, passengers: data.passengers };
+  } catch (error) {
+    console.error("Passenger API error:", error);
+    return { success: false, passengers: [] };
+  }
+};

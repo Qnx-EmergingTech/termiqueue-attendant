@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
@@ -6,28 +6,34 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
+import { getAttendantPassengers } from "../../api/buses";
 
 const Passenger = () => {
-  const [activeTab, setActiveTab] = useState('queue');
+  const [activeTab, setActiveTab] = useState("queue");
+  const [passengers, setPassengers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const passengerQueue = [
-    { id: '#102896', status: 'Already here' },
-    { id: '#01235', status: 'Already here' },
-    { id: '#01344', status: 'Already here' },
-    { id: '#01230', status: 'Already here' },
-    { id: '#01345', status: '5 mins away' },
-    { id: '#12789', status: '7 mins away' },
-    { id: '#13453', status: '10 mins away' },
-  ];
+  useEffect(() => {
+    const fetchPassengers = async () => {
+      setLoading(true);
+      const result = await getAttendantPassengers();
+      if (result.success) {
+        setPassengers(result.passengers);
+      }
+      setLoading(false);
+    };
+    fetchPassengers();
+  }, []);
 
-  const boardedPassengers = passengerQueue.slice(0, 4);
+  const queuePassengers = passengers;
+  const boardedPassengers = passengers.filter(p => p.status === "boarded");
 
-  const capacity = 45;
+  const capacity = passengers.length ? passengers[0].bus_capacity || 45 : 45;
   const onboard = boardedPassengers.length;
 
   const renderPassenger = ({ item }) => {
-    const isHere = item.status === 'Already here';
+    const isHere = item.status === "boarded";
 
     return (
       <View style={styles.passengerRow}>
@@ -40,8 +46,8 @@ const Passenger = () => {
           <Image
             source={
               isHere
-                ? require('../../assets/images/seat-passenger.png')
-                : require('../../assets/images/seat-passenger-disable.png')
+                ? require("../../assets/images/seat-passenger.png")
+                : require("../../assets/images/seat-passenger-disable.png")
             }
             style={styles.iconImage}
             resizeMode="contain"
@@ -51,7 +57,7 @@ const Passenger = () => {
         <View>
           <Text style={styles.passengerId}>{item.id}</Text>
           <Text style={[styles.status, isHere && styles.statusHere]}>
-            {item.status}
+            {isHere ? "Already here" : "Not yet boarded"}
           </Text>
         </View>
       </View>
@@ -65,13 +71,13 @@ const Passenger = () => {
       {/* Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'queue' && styles.tabActive]}
-          onPress={() => setActiveTab('queue')}
+          style={[styles.tab, activeTab === "queue" && styles.tabActive]}
+          onPress={() => setActiveTab("queue")}
         >
           <Text
             style={[
               styles.tabText,
-              activeTab === 'queue' && styles.tabTextActive,
+              activeTab === "queue" && styles.tabTextActive,
             ]}
           >
             Passenger queue
@@ -79,13 +85,13 @@ const Passenger = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'boarded' && styles.tabActive]}
-          onPress={() => setActiveTab('boarded')}
+          style={[styles.tab, activeTab === "boarded" && styles.tabActive]}
+          onPress={() => setActiveTab("boarded")}
         >
           <Text
             style={[
               styles.tabText,
-              activeTab === 'boarded' && styles.tabTextActive,
+              activeTab === "boarded" && styles.tabTextActive,
             ]}
           >
             Boarded passengers
@@ -94,18 +100,23 @@ const Passenger = () => {
       </View>
 
       {/* List */}
-      <FlatList
-        data={activeTab === 'queue' ? passengerQueue : boardedPassengers}
-        keyExtractor={(item) => item.id}
-        renderItem={renderPassenger}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      />
+        <FlatList
+          data={activeTab === "queue" ? queuePassengers : boardedPassengers}
+          keyExtractor={(item) => item.id}
+          renderItem={renderPassenger}
+          contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {loading ? "Loading passengers..." : "No Passengers at This Time"}
+              </Text>
+            </View>
+          }
+        />
 
       {/* Counter bubble */}
       <View style={styles.counterBubble}>
-        <Text style={styles.counterTop}>
-          {String(onboard).padStart(2, '0')}
-        </Text>
+        <Text style={styles.counterTop}>{String(onboard).padStart(2, "0")}</Text>
 
         <View style={styles.diagonalLine} />
 
@@ -235,4 +246,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#096B72',
     transform: [{ rotate: '45deg' }],
   },
+  emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#8C8C8C",
+    fontWeight: "500",
+  },
+
 });
