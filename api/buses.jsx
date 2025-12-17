@@ -219,3 +219,31 @@ export const getAttendantPassengers = async () => {
     return { success: false, passengers: [] };
   }
 };
+
+export const getQueues = async () => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+
+    const url = joinUrl(API_BASE_URL, "queues/");
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || "Failed to fetch queues");
+    }
+
+    return { success: true, queues: data };
+  } catch (error) {
+    console.error("Get queues error:", error);
+    return { success: false, queues: [] };
+  }
+};

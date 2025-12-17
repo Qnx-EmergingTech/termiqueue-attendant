@@ -1,7 +1,8 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from "react";
 import { Alert, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { claimBus, createBus } from "../api/buses";
+import DropDownPicker from "react-native-dropdown-picker";
+import { claimBus, createBus, getQueues } from "../api/buses";
 import { getUser } from "../utils/authStorage";
 
 export default function Route() {
@@ -10,8 +11,14 @@ export default function Route() {
   const [busNumber, setBusNumber] = useState("");
   const [plateNumber, setplateNumber] = useState("");
   const [capacity, setCapacity] = useState("");
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [user, setUser] = useState(null);
+  const [queues, setQueues] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [dropdownValue, setDropdownValue] = useState(null);
+  const [dropdownItems, setDropdownItems] = useState([]);
+
 
   useEffect(() => {
     (async () => {
@@ -24,46 +31,65 @@ export default function Route() {
     })();
   }, []);
 
-const handleCreateBus = async () => {
-  if (!busName || !busNumber || !capacity || !destination || !plateNumber) {
-    return Alert.alert("Validation Error", "All fields are required.");
-  }
+  useEffect(() => {
+    const fetchQueues = async () => {
+      const res = await getQueues();
+      if (res.success) {
+        const availableQueues = res.queues.filter(q => !q.bus_id);
+        setQueues(availableQueues);
 
-  if (!user) {
-    return Alert.alert("Error", "User info not found.");
-  }
+        setDropdownItems(
+          availableQueues.map(q => ({
+            label: `${q.destination}`,
+            value: q.id,
+          }))
+        );
+      }
+    };
 
-  const attendantName = [user.first_name, user.middle_name, user.last_name]
-    .filter(Boolean)
-    .join(" ");
+    fetchQueues();
+  }, []);
 
-  const busData = {
-    bus_name: busName,
-    bus_number: busNumber,
-    plate_number: plateNumber, 
-    priority_seat: 0,
-    capacity: Number(capacity),
-    origin: "One Ayala",    //default to one ayala, all static data here, should be discuss with the team
-    destination: destination,
-    status: "available",
-    current_location: { lat: 0.0, lon: 0.0 },
-    attendant_id: user.uid,
-    attendant_name: attendantName,
+  const handleCreateBus = async () => {
+    if (!busName || !busNumber || !capacity || !destination || !plateNumber || !origin) {
+      return Alert.alert("Validation Error", "All fields are required.");
+    }
+
+    if (!user) {
+      return Alert.alert("Error", "User info not found.");
+    }
+
+    const attendantName = [user.first_name, user.middle_name, user.last_name]
+      .filter(Boolean)
+      .join(" ");
+
+    const busData = {
+      bus_name: busName,
+      bus_number: busNumber,
+      plate_number: plateNumber, 
+      priority_seat: 0,
+      capacity: Number(capacity),
+      origin: origin, 
+      destination: destination,
+      status: "available",
+      current_location: { lat: 0.0, lon: 0.0 },
+      attendant_id: user.uid,
+      attendant_name: attendantName,
+    };
+
+    const res = await createBus(busData);
+    if (!res.success) {
+      return Alert.alert("Error", res.message);
+    }
+
+    const busId = res.bus.id; 
+    const claimRes = await claimBus(busId);
+    if (!claimRes.success) {
+      return Alert.alert("Error", claimRes.message);
+    }
+
+    router.push("/home");
   };
-
-  const res = await createBus(busData);
-  if (!res.success) {
-    return Alert.alert("Error", res.message);
-  }
-
-  const busId = res.bus.id; 
-  const claimRes = await claimBus(busId);
-  if (!claimRes.success) {
-    return Alert.alert("Error", claimRes.message);
-  }
-
-  router.push("/home");
-};
 
 
   return (
@@ -108,7 +134,7 @@ const handleCreateBus = async () => {
               style={styles.input}
             />
 
-            <TextInput 
+             <TextInput 
               placeholder="Max seat capacity"
               keyboardType="numeric"
               value={capacity}
@@ -117,11 +143,41 @@ const handleCreateBus = async () => {
             />
 
             <TextInput 
-              placeholder="Destination (ex. Pacita)"
-              value={destination}
-              onChangeText={setDestination}
+              placeholder="Start Route"
+              value={origin}
+              onChangeText={setOrigin}
               style={styles.input}
             />
+
+            <View style={{ zIndex: 1000, width: "100%" }}>
+              <DropDownPicker
+                open={open}
+                value={dropdownValue}
+                items={dropdownItems}
+                setOpen={setOpen}
+                setValue={(cb) => {
+                  const selectedId = cb(dropdownValue);
+                  setDropdownValue(selectedId);
+
+                  if (!selectedId) {
+                    setDestination("");
+                    return;
+                  }
+
+                  const queue = queues.find(q => q.id === selectedId);
+                  if (!queue) return;
+
+                  setDestination(queue.destination);
+                }}
+                setItems={setDropdownItems}
+                placeholder="End Route"
+                style={styles.dropdown}
+                textStyle={styles.dropdownText}
+                placeholderStyle={styles.placeholder}
+                dropDownContainerStyle={styles.dropdownContainer}
+                listItemLabelStyle={styles.dropdownText}
+              />
+            </View>
 
             <Pressable style={styles.proceedButton} onPress={handleCreateBus}>
               <Text style={styles.proceed}>PROCEED</Text>
@@ -173,7 +229,7 @@ const styles = StyleSheet.create({
     },
     mid: {
         flex: 1, 
-        marginTop: 150,
+        marginTop: 220,
         justifyContent: "center",
         alignItems: "center",
         paddingHorizontal: 20,
@@ -231,5 +287,35 @@ const styles = StyleSheet.create({
         color: "#096B72",
         fontFamily: "Roboto_500Medium",
         fontSize: 14,
+    },
+    dropdown: {
+      backgroundColor: "#F2F3F7",
+      borderColor: "#F2F3F7",
+      borderRadius: 10,
+      minHeight: 48,
+      marginTop: 15,
+      paddingHorizontal: 15,
+      paddingVertical: 15,
+      width: screenWidth * 0.83,
+      alignSelf: "center",
+    },
+
+    dropdownContainer: {
+      backgroundColor: "#F2F3F7",
+      borderColor: "#F2F3F7",
+      width: screenWidth * 0.83,
+      alignSelf: "center",
+    },
+
+    dropdownText: {
+      fontSize: 11,
+      fontFamily: "Roboto_300Light",
+      color: "#000",
+    },
+
+    placeholder: {
+      fontSize: 12,
+      fontFamily: "Roboto_300",
+      color: "#A1A4B2",
     },
 });
