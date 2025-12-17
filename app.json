@@ -1,17 +1,18 @@
 {
   "expo": {
-    "name": "termiQAttendant",
-    "slug": "termiQAttendant",
+    "name": "QNextAttendant",
+    "slug": "QNextAttendant",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "termiqattendant",
+    "icon": "./assets/images/Qnext-logo.png",
+    "scheme": "qnextattendant",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -19,7 +20,16 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.questronix.qnext",
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDDNG2JviPQbBLuCT_cwzjcd47ENs8TROs"
+        }
+      }
     },
     "web": {
       "output": "static",
@@ -45,6 +55,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "34579200-49d8-400c-aee2-6770a12dc532"
+      }
     }
   }
 }
