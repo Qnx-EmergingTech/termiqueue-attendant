@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "QNextAttendant",
-    "slug": "QNextAttendant",
+    "slug": "termiQAttendant",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Qnext-logo.png",
-    "scheme": "qnextattendant",
+    "scheme": "termiqattendant",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
