@@ -247,3 +247,34 @@ export const getQueues = async () => {
     return { success: false, queues: [] };
   }
 };
+
+export const scanQr = async (busId, qrJson) => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/scan-qr`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ qr_json: qrJson }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = data.detail || "Failed to scan QR code";
+      throw new Error(msg);
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("scanQr API error:", error);
+    return { success: false, message: error.message };
+  }
+};

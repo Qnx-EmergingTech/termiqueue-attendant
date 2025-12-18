@@ -36,6 +36,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/withCleartextTraffic",
       "expo-router",
       [
         "expo-splash-screen",
@@ -49,8 +50,7 @@
           }
         }
       ],
-      "expo-font",
-      "expo-barcode-scanner"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -120,7 +120,7 @@ const handleProceed = async () => {
 
           <View style={styles.bottom}>
             <Text style={styles.bot}>ALREADY HAVE AN ACCOUNT? </Text>
-            <Link href="/signup" style={styles.signUp}>LOG IN</Link>
+            <Link href="/login" style={styles.signUp}>LOG IN</Link>
           </View>
         </View>
       </View>
