@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
   Image,
   Modal,
   Pressable,
@@ -30,22 +29,7 @@ export default function arrivedModal() {
 
       try {
         setLoading(true);
-        const result = await arriveBus(busId);
-        if (!result?.message?.queue_id) {
-          Alert.alert(
-            "Cannot Mark as Arrived",
-            "This bus is not currently in a queue. You cannot mark it as arrived.",
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.replace("/(tabs)/home");
-                },
-              },
-            ]
-          );
-          return;
-        }
+        await arriveBus(busId);
 
         await setTripState("arrived", "Start Your Trip");
         router.replace("/(tabs)/home");
