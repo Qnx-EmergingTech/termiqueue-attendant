@@ -91,11 +91,22 @@ export default function Scan() {
             <Text style={styles.time}>Route - {myBus?.destination || "None"}</Text>
           </View>
 
-          <Pressable style={styles.activeButton} onPress={() => {
-              router.push("/addpassengerModal");
-            }}>
-            <Text style={styles.active}>Add A Passenger</Text>
-          </Pressable>
+          <Pressable
+  style={styles.activeButton}
+  onPress={() => {
+    if (!myBus?.id) {
+      Alert.alert("Error", "Bus not loaded yet");
+      return;
+    }
+
+    router.push({
+      pathname: "/addpassengerModal",
+      params: { busId: myBus.id },
+    });
+  }}
+>
+  <Text style={styles.active}>Add A Passenger</Text>
+</Pressable>
         </View>
    </View>
   </PaperProvider>
@@ -161,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 6,
-    
+
    },
    bus: {
     fontFamily: "Roboto_700Bold",

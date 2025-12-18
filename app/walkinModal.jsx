@@ -1,16 +1,26 @@
 import { useRouter } from 'expo-router';
 import { useState } from "react";
+import { Alert } from "react-native";
 import CustomizableModal from "../app/common/commonModal";
 
 export default function WalkInModal() {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
+  const { busId } = useLocalSearchParams(); 
 
+  if (!busId) {
+    Alert.alert("Error", "Bus ID missing");
+    router.replace("/scan");
+    return null;
+  }
 
-    const handleConfirm = async () => {
+    const handleConfirm = () => {
     setVisible(false);
     setTimeout(() => {
-      router.push("/qr");
+      router.push({
+        pathname: "/qr",
+        params: { busId },
+      });
     }, 10);
   };
 
@@ -18,10 +28,13 @@ export default function WalkInModal() {
     const handleNext = () => {
     setVisible(false);
     setTimeout(() => {
-      router.push("/qr");
+      router.push({
+        pathname: "/qr",
+        params: { busId },
+      });
     }, 10);
   };
-  
+
       const closeAndGoHome = () => {
     setVisible(false);
     setTimeout(() => {
@@ -45,3 +58,4 @@ export default function WalkInModal() {
     />
   );
 }
+ 
