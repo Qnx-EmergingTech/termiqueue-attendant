@@ -35,7 +35,7 @@ export default function Qr() {
           text: "OK",
           onPress: () => {
             setIsProcessing(false);
-            router.replace("/passengers");
+            router.replace("/passenger");
           },
         },
       ]);

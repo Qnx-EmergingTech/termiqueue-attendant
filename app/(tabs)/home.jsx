@@ -25,16 +25,10 @@ export default function Home() {
   const isButtonDisabled = isFetchingBus;
 
 
-
-
   const handleLogout = () => {
     closeMenu();
     setLogoutVisible(true); 
   };
-
-  const handleActive = () => {
-  console.log("Status set to active"); //TEMPORARY STUFF, BEFORE INTEGRATING SET BUS QUEUE TO ACTIVE
-};
 
     const loadTripState = async () => {
       const state = await getTripState();
@@ -119,7 +113,28 @@ export default function Home() {
                 <Ionicons name="ellipsis-vertical" size={24} color="#A1A4B2" />
               </Pressable>
             }
-          >
+          ><Menu.Item
+            onPress={() => {
+              closeMenu();
+              router.push({
+                pathname: "/re-route",
+                params: { currentBusId: myBus?.id },
+              });
+            }}
+            title="Change Bus"
+            leadingIcon={() => (
+              <Ionicons name="swap-horizontal-outline" size={24} color="#096B72" />
+            )}
+            titleStyle={{
+              fontFamily: "Roboto_500Medium",
+              fontSize: 16,
+              color: "#333",
+            }}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 10,
+            }}
+          />
             <Menu.Item
             onPress={handleLogout}
             title="Logout"
