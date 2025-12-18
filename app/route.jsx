@@ -35,11 +35,10 @@ export default function Route() {
     const fetchQueues = async () => {
       const res = await getQueues();
       if (res.success) {
-        const availableQueues = res.queues.filter(q => !q.bus_id);
-        setQueues(availableQueues);
+        setQueues(res.queues);
 
         setDropdownItems(
-          availableQueues.map(q => ({
+          res.queues.map(q => ({
             label: `${q.destination}`,
             value: q.id,
           }))
