@@ -3,18 +3,28 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import { Provider as PaperProvider } from 'react-native-paper';
-import { getMyBus } from "../../api/buses";
+import { getAttendantPassengers, getMyBus } from "../../api/buses";
+
 
 export default function Scan() {
   const router = useRouter();
   const [myBus, setMyBus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [boardedCount, setBoardedCount] = useState(0);
+
 
   useEffect(() => {
   const fetchMyBus = async () => {
     const result = await getMyBus();
     if (result.success && result.bus) {
       setMyBus(result.bus);
+    }
+    const passengerResult = await getAttendantPassengers();
+    if (passengerResult.success) {
+      const boarded = passengerResult.passengers.filter(
+        p => p.status === "boarded"
+      );
+      setBoardedCount(boarded.length);
     }
     setLoading(false);
   };
@@ -52,7 +62,7 @@ export default function Scan() {
                 <Text style={styles.details}>{myBus.origin}</Text>
                 <Text style={styles.details}>Destination: {myBus.destination}</Text>
                 <Text style={styles.details}>
-                  Capacity: {myBus.priority_seat}/{myBus.capacity}
+                  Capacity: {boardedCount}/{myBus.capacity}
                 </Text>
                 <Text style={styles.details}>
                   Status: {getBusStatusText(myBus.status)}
@@ -91,11 +101,22 @@ export default function Scan() {
             <Text style={styles.time}>Route - {myBus?.destination || "None"}</Text>
           </View>
 
-          <Pressable style={styles.activeButton} onPress={() => {
-              router.push("/addpassengerModal");
-            }}>
-            <Text style={styles.active}>Add A Passenger</Text>
-          </Pressable>
+          <Pressable
+  style={styles.activeButton}
+  onPress={() => {
+    if (!myBus?.id) {
+      Alert.alert("Error", "Bus not loaded yet");
+      return;
+    }
+
+    router.push({
+      pathname: "/addpassengerModal",
+      params: { busId: myBus.id },
+    });
+  }}
+>
+  <Text style={styles.active}>Add A Passenger</Text>
+</Pressable>
         </View>
    </View>
   </PaperProvider>
@@ -161,7 +182,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 6,
-    
+
    },
    bus: {
     fontFamily: "Roboto_700Bold",

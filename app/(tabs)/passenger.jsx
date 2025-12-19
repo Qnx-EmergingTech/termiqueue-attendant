@@ -12,24 +12,35 @@ import { getAttendantPassengers } from "../../api/buses";
 const Passenger = () => {
   const [activeTab, setActiveTab] = useState("queue");
   const [passengers, setPassengers] = useState([]);
+  const [capacity, setCapacity] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchPassengers = async () => {
-      setLoading(true);
-      const result = await getAttendantPassengers();
-      if (result.success) {
-        setPassengers(result.passengers);
-      }
-      setLoading(false);
-    };
-    fetchPassengers();
-  }, []);
+
+    useEffect(() => {
+      fetchPassengers();
+    }, []);
+
+const fetchPassengers = async () => {
+  try {
+    setLoading(true);
+    const result = await getAttendantPassengers();
+
+    setPassengers(result.passengers);
+    setCapacity(result.capacity);
+  } catch (error) {
+    console.error("Failed to fetch passengers:", error);
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
+
+
 
   const queuePassengers = passengers;
   const boardedPassengers = passengers.filter(p => p.status === "boarded");
 
-  const capacity = passengers.length ? passengers[0].bus_capacity || 45 : 45;
   const onboard = boardedPassengers.length;
 
   const renderPassenger = ({ item }) => {
@@ -105,10 +116,17 @@ const Passenger = () => {
           keyExtractor={(item) => item.id}
           renderItem={renderPassenger}
           contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
+
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            fetchPassengers();
+          }}
+
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
-                {loading ? "Loading passengers..." : "No Passengers at This Time"}
+                {refreshing ? "Refreshing..." : loading ? "Loading passengers..." : "No Passengers at This Time"}
               </Text>
             </View>
           }

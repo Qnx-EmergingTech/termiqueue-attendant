@@ -1,47 +1,36 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { scanQr } from "../api/buses";
 
-export default function Qr({ busId }) {
+export default function Qr() {
   const router = useRouter();
-  const [permission, requestPermission] = useCameraPermissions();
-  const [scannedCodes, setScannedCodes] = useState([]);
+  const { busId } = useLocalSearchParams();
+
+  const [permission, requestPermission] = useCameraPermissions();;
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
+    if (!permission?.granted) requestPermission();
   }, [permission]);
 
-  if (!permission) return null;
-
-  if (!permission.granted) {
+  if (!busId) {
     return (
-      <View>
-        <Text>Camera permission required.</Text>
+      <View style={styles.center}>
+        <Text>Error: Bus ID missing</Text>
       </View>
     );
   }
 
-  const handleBarcodeScanned = async ({ data }) => {
+  const handleScan = async ({ data }) => {
     if (isProcessing) return;
     setIsProcessing(true);
 
-    if (scannedCodes.includes(data)) {
-      Alert.alert("Already Scanned", "This QR code was already scanned.", [
-        { text: "OK", onPress: () => setIsProcessing(false) },
-      ]);
-      return;
-    }
-
-    const result = await scanQr(busId, data);
+    const result = await scanQr(busId.toString(), data);
 
     if (result.success) {
-      setScannedCodes(prev => [...prev, data]);
-      Alert.alert("Success!", "QR code scanned successfully.", [
+      Alert.alert("Success", "Passenger scanned", [
         {
           text: "OK",
           onPress: () => {
@@ -51,11 +40,15 @@ export default function Qr({ busId }) {
         },
       ]);
     } else {
-      Alert.alert("Error", result.message || "Failed to scan QR code", [
+      Alert.alert("Error", result.message, [
         { text: "OK", onPress: () => setIsProcessing(false) },
       ]);
     }
   };
+
+  if (!permission?.granted) {
+    return <Text>Camera permission required</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -63,7 +56,7 @@ export default function Qr({ busId }) {
         style={StyleSheet.absoluteFill}
         facing="back"
         barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        onBarcodeScanned={handleBarcodeScanned}
+        onBarcodeScanned={handleScan}
       />
 
       <View style={styles.overlay}>

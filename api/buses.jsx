@@ -213,10 +213,11 @@ export const getAttendantPassengers = async () => {
       throw new Error(msg);
     }
 
-    return { success: true, passengers: data.passengers };
+    return { success: true, passengers: data.passengers, capacity: data.capacity };
   } catch (error) {
     console.error("Passenger API error:", error);
-    return { success: false, passengers: [] };
+    return { success: false, passengers: [], capacity: 0 };
+
   }
 };
 
@@ -275,6 +276,60 @@ export const scanQr = async (busId, qrJson) => {
     return { success: true, data };
   } catch (error) {
     console.error("scanQr API error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const getAllBuses = async () => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+
+    const url = joinUrl(API_BASE_URL, "buses/");
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || "Failed to fetch buses");
+    }
+
+    return { success: true, buses: data };
+  } catch (error) {
+    return { success: false, buses: [], message: error.message };
+  }
+};
+
+export const releaseBus = async (busId) => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/release`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = data.detail || "Failed to release bus";
+      throw new Error(msg);
+    }
+
+    return { success: true, data };
+  } catch (error) {
     return { success: false, message: error.message };
   }
 };
