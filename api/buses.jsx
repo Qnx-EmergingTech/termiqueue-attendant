@@ -213,10 +213,11 @@ export const getAttendantPassengers = async () => {
       throw new Error(msg);
     }
 
-    return { success: true, passengers: data.passengers };
+    return { success: true, passengers: data.passengers, capacity: data.capacity };
   } catch (error) {
     console.error("Passenger API error:", error);
-    return { success: false, passengers: [] };
+    return { success: false, passengers: [], capacity: 0 };
+
   }
 };
 

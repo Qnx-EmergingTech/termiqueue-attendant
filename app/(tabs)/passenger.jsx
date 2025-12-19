@@ -21,15 +21,13 @@ const Passenger = () => {
       fetchPassengers();
     }, []);
 
-  const fetchPassengers = async () => {
+const fetchPassengers = async () => {
   try {
     setLoading(true);
     const result = await getAttendantPassengers();
 
-    if (result.success) {
-      setPassengers(result.passengers);
-      setCapacity(result.capacity);
-    }
+    setPassengers(result.passengers);
+    setCapacity(result.capacity);
   } catch (error) {
     console.error("Failed to fetch passengers:", error);
   } finally {
@@ -37,6 +35,7 @@ const Passenger = () => {
     setRefreshing(false);
   }
 };
+
 
 
   const queuePassengers = passengers;
