@@ -11,7 +11,7 @@ export default function Scan() {
   const [myBus, setMyBus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [boardedCount, setBoardedCount] = useState(0);
-
+  const canAddPassenger = myBus?.status === "arrived";
 
   useEffect(() => {
   const fetchMyBus = async () => {
@@ -33,10 +33,16 @@ export default function Scan() {
 }, []);
 
     const getBusStatusText = (status) => {
-  switch (status) {
-    case "available":
-      return "Waiting for passengers";
+    switch (status) {
+    case "idle":
+      return "Not Operating";
     case "active":
+      return "Not Operating";
+    case "arrived":
+      return "Waiting for passengers";
+    case "ongoing":
+      return "Ongoing trip";
+    case "in_transit":
       return "Ongoing trip";
     case "offline":
       return "Not operating";
@@ -49,7 +55,7 @@ export default function Scan() {
   <PaperProvider>
 
     <View style={styles.container}>
-      <Text style={styles.header}>Scan</Text>
+      <Text style={styles.header}>Add a Passenger</Text>
 
       <View style={styles.info1}>
           <Ionicons name="bus-outline" size={170} color="#096B72" style={styles.icon}/>
@@ -96,27 +102,32 @@ export default function Scan() {
 
 
         <View style={styles.bottomContainer}>
-          <View style={styles.box}>
-            <Text style={styles.status}>Scan Passenger</Text>
-            <Text style={styles.time}>Route - {myBus?.destination || "None"}</Text>
-          </View>
+        {!canAddPassenger && !loading && (
+        <Text style={styles.statusHint}>
+          Set your status to "Has Arrived" first in the home screen to add a passenger
+        </Text>
+      )}
+        <Pressable
+          style={[
+            styles.activeButton,
+            !canAddPassenger && styles.disabledButton,
+          ]}
+          disabled={!canAddPassenger}
+          onPress={() => {
+            if (!myBus?.id) {
+              Alert.alert("Error", "Bus not loaded yet");
+              return;
+            }
 
-          <Pressable
-  style={styles.activeButton}
-  onPress={() => {
-    if (!myBus?.id) {
-      Alert.alert("Error", "Bus not loaded yet");
-      return;
-    }
+            router.push({
+              pathname: "/addpassengerModal",
+              params: { busId: myBus.id },
+            });
+          }}
+        >
+          <Text style={styles.active}>Add A Passenger</Text>
+        </Pressable>
 
-    router.push({
-      pathname: "/addpassengerModal",
-      params: { busId: myBus.id },
-    });
-  }}
->
-  <Text style={styles.active}>Add A Passenger</Text>
-</Pressable>
         </View>
    </View>
   </PaperProvider>
@@ -139,14 +150,14 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 20,
   },
-    activeButton: {
+  activeButton: {
     backgroundColor: "#096B72",
     flexDirection: "row",
     justifyContent: "center",
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 38,
-    marginTop: 20,
+    marginTop: 10,
     width: screenWidth * 0.9,
     alignItems: "center",
     alignSelf: "center",
@@ -202,8 +213,17 @@ const styles = StyleSheet.create({
     color: "black",
     marginBottom: 5,
    },
-    bottomContainer: {
+  bottomContainer: {
     flex: 1,
     justifyContent: "flex-end",
+  },
+  disabledButton: {
+    backgroundColor: "#BFC5C6",
+  },
+  statusHint: {
+    color: "red",
+    fontStyle: "italic",
+    fontSize: 12,
+    textAlign: "left",
   },
 });
