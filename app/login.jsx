@@ -1,15 +1,18 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { logInWithUsername } from '../api/auth';
 
 export default function Login() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
 const handleLogin = async () => {
+  if (loading) return;
+
   setError("");
 
   if (!username.trim() || !password) {
@@ -17,14 +20,23 @@ const handleLogin = async () => {
     return;
   }
 
-  const result = await logInWithUsername(username, password);
+  try {
+    setLoading(true);
 
-  if (result.success) {
-    router.replace("/(tabs)/home");
-  } else {
-    setError(result.message);
+    const result = await logInWithUsername(username, password);
+
+    if (result.success) {
+      router.replace("/(tabs)/home");
+    } else {
+      setError(result.message);
+    }
+  } catch (err) {
+    setError("Login failed. Please try again.");
+  } finally {
+    setLoading(false);
   }
 };
+
 
   return (
     <>
@@ -46,8 +58,16 @@ const handleLogin = async () => {
 
             {error ? <Text style={{ color: 'red', marginTop: 5 }}>{error}</Text> : null}
 
-            <Pressable style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.login}>LOG IN</Text>
+            <Pressable
+              style={[styles.loginButton, loading && { opacity: 0.7 }]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.login}>LOG IN</Text>
+              )}
             </Pressable>
 
             <Text style={styles.fp}>Forgot Password?</Text>

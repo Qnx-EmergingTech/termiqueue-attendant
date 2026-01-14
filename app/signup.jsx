@@ -1,7 +1,7 @@
 import Checkbox from 'expo-checkbox';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { signUp } from '../api/auth';
 
 export default function Signup() {
@@ -12,8 +12,11 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
 
 const handleProceed = async () => {
+  if (loading) return; 
   setError("");
 
   if (!username.trim()) return setError("Username is required.");
@@ -22,14 +25,23 @@ const handleProceed = async () => {
   if (password !== confirmPassword) return setError("Passwords do not match.");
   if (!accepted) return setError("Please accept the privacy policy.");
 
-  const result = await signUp(email, password, username);
+  try {
+    setLoading(true);
 
-  if (result.success) {
-    router.replace("/kyc");
-  } else {
-    setError(result.message);
+    const result = await signUp(email, password, username);
+
+    if (result.success) {
+      router.replace("/kyc");
+    } else {
+      setError(result.message);
+    }
+  } catch (err) {
+    setError("Signup failed. Please try again.");
+  } finally {
+    setLoading(false);
   }
 };
+
   return (
     <>
       <Stack.Screen
@@ -90,9 +102,17 @@ const handleProceed = async () => {
               />
             </View>
 
-            <Pressable style={styles.loginButton} onPress={handleProceed}>
+            <Pressable
+            style={[styles.loginButton, loading && { opacity: 0.7 }]}
+            onPress={handleProceed}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
               <Text style={styles.login}>PROCEED</Text>
-            </Pressable>
+            )}
+          </Pressable>
           </View>
         </View>
       </View>
