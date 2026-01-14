@@ -7,6 +7,7 @@ import { signUp } from '../api/auth';
 export default function Signup() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
@@ -23,11 +24,21 @@ const handleProceed = async () => {
     return;
   }
 
+  if (!username) {
+  setError("Username is required.");
+  return;
+  }
+  
+  if (!email) {
+    setError("Email is required.");
+    return;
+  }
+
   const result = await signUp(email, password);
   if (result.success) {
       router.replace({
         pathname: "/kyc",
-        params: { token: result.token }
+        params: { username, token: result.token }
       });
   } else {
     setError(result.message);
@@ -54,6 +65,12 @@ const handleProceed = async () => {
           <Text style={styles.heading}>Create your account</Text>
 
           <View style={styles.mid}>
+            <TextInput
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+              style={styles.input}
+            />
             <TextInput
               placeholder="Email address"
               value={email}
@@ -118,7 +135,7 @@ const styles = StyleSheet.create({
     },
     heading: {
        position: 'absolute',
-       top: screenHeight * 0.25,    
+       top: screenHeight * 0.2,    
        left: '9%',                 
        justifyContent: "center",
        alignItems: "center",
@@ -130,7 +147,7 @@ const styles = StyleSheet.create({
     },
     mid: {
         flex: 1, 
-        marginTop: 60,
+        marginTop: 70,
         justifyContent: "center",
         alignItems: "center",
         paddingHorizontal: 20,
