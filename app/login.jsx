@@ -1,24 +1,42 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { logIn } from '../api/auth';
+import { ActivityIndicator, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { logInWithUsername } from '../api/auth';
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    setError("");
-    const result = await logIn(email, password);
+const handleLogin = async () => {
+  if (loading) return;
+
+  setError("");
+
+  if (!username.trim() || !password) {
+    setError("Username and password are required.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const result = await logInWithUsername(username, password);
 
     if (result.success) {
-      router.replace("/(tabs)/home"); 
+      router.replace("/(tabs)/home");
     } else {
       setError(result.message);
     }
-  };
+  } catch (err) {
+    setError("Login failed. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
@@ -29,13 +47,27 @@ export default function Login() {
           <Text style={styles.heading}>Welcome Back!</Text>
 
           <View style={styles.mid}>
-            <TextInput placeholder="Email address" value={email} onChangeText={setEmail} style={styles.input} />
+           <TextInput
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+            style={styles.input}
+          />
+
             <TextInput placeholder="Password" value={password} secureTextEntry onChangeText={setPassword} style={styles.input} />
 
             {error ? <Text style={{ color: 'red', marginTop: 5 }}>{error}</Text> : null}
 
-            <Pressable style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.login}>LOG IN</Text>
+            <Pressable
+              style={[styles.loginButton, loading && { opacity: 0.7 }]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.login}>LOG IN</Text>
+              )}
             </Pressable>
 
             <Text style={styles.fp}>Forgot Password?</Text>

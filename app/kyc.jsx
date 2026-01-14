@@ -1,17 +1,19 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { createProfile } from '../api/profile';
 import { getToken, setUser } from "../utils/authStorage";
+
 
 export default function Kyc() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [address, setAddress] = useState("");
   const [error, setError] = useState("");
   const [token, setTokenState] = useState(null);
+  const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     (async () => {
@@ -25,31 +27,33 @@ export default function Kyc() {
   }, []);
 
 const handleProceed = async () => {
+  if (loading) return; 
   setError("");
 
-  if (!firstName.trim() || !lastName.trim() || !address.trim()) {
-    setError("All required fields (First name, Last name, Address) must be filled.");
+  if (!firstName.trim() || !lastName.trim()) {
+    setError("All required fields (First name, Last name) must be filled.");
     return;
   }
   if (!token) {
     setError("Authentication token not found. Please log in again.");
     return;
   }
+
   try {
+    setLoading(true);
+
     const result = await createProfile({
       first_name: firstName,
       middle_name: middleName,
       last_name: lastName,
-      address: address,
     });
 
     if (result.success) {
-    await setUser({
+      await setUser({
         uid: result.uid, 
         first_name: firstName,
         middle_name: middleName,
         last_name: lastName,
-        address
       });
       router.replace("/route");
     } else {
@@ -63,8 +67,11 @@ const handleProceed = async () => {
     } else {
       setError(`Unexpected error: ${err.message}`);
     }
+  } finally {
+    setLoading(false);
   }
 };
+
 
   return (
     <>
@@ -104,18 +111,20 @@ const handleProceed = async () => {
               onChangeText={setLastName}
               style={styles.input}
             />
-            <TextInput 
-              placeholder="Full address"
-              value={address}
-              onChangeText={setAddress}
-              style={styles.input}
-            />
-
             {error ? <Text style={{ color: 'red', marginTop: 5 }}>{error}</Text> : null}
 
-            <Pressable style={styles.proceedButton} onPress={handleProceed}>
+          <Pressable
+            style={[styles.proceedButton, loading && { opacity: 0.7 }]}
+            onPress={handleProceed}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
               <Text style={styles.proceed}>PROCEED</Text>
-            </Pressable>
+            )}
+          </Pressable>
+
           </View>
 
           <View style={styles.bottom}>

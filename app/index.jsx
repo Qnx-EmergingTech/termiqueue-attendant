@@ -1,8 +1,22 @@
 import { Link, Stack, useRouter } from 'expo-router';
-import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = () => {
+  if (loading) return;
+
+  setLoading(true);
+  router.push("/signup");
+
+  setTimeout(() => {
+    setLoading(false);
+  }, 500);
+};
+
 
   return (
     <>
@@ -21,8 +35,16 @@ export default function Index() {
                 <Text style={styles.title}>Welcome to Termi-Q Attendant</Text>
                 <Text style={styles.subtitle}>Confirm arrivals. Keep the queue moving.</Text>
             </View>
-            <Pressable style={styles.signupButton} onPress={() => router.push("/signup")}>
-                <Text style={styles.signUp}>SIGN UP</Text>
+            <Pressable
+                style={[styles.signupButton, loading && { opacity: 0.7 }]}
+                onPress={handleSignup}
+                disabled={loading}
+                >
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.signUp}>SIGN UP</Text>
+                )}
             </Pressable>
             <View style={styles.bottom}>
                 <Text style={styles.bot}>Already have an account? </Text>

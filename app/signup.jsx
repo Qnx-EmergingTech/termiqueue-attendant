@@ -1,36 +1,44 @@
 import Checkbox from 'expo-checkbox';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { signUp } from '../api/auth';
 
 export default function Signup() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
 
 const handleProceed = async () => {
+  if (loading) return; 
   setError("");
-  if (!accepted) {
-    setError("Please accept the privacy policy.");
-    return;
-  }
-  if (password !== confirmPassword) {
-    setError("Passwords do not match.");
-    return;
-  }
 
-  const result = await signUp(email, password);
-  if (result.success) {
-      router.replace({
-        pathname: "/kyc",
-        params: { token: result.token }
-      });
-  } else {
-    setError(result.message);
+  if (!username.trim()) return setError("Username is required.");
+  if (!email.trim()) return setError("Email is required.");
+  if (!password || !confirmPassword) return setError("Password is required.");
+  if (password !== confirmPassword) return setError("Passwords do not match.");
+  if (!accepted) return setError("Please accept the privacy policy.");
+
+  try {
+    setLoading(true);
+
+    const result = await signUp(email, password, username);
+
+    if (result.success) {
+      router.replace("/kyc");
+    } else {
+      setError(result.message);
+    }
+  } catch (err) {
+    setError("Signup failed. Please try again.");
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -54,6 +62,12 @@ const handleProceed = async () => {
           <Text style={styles.heading}>Create your account</Text>
 
           <View style={styles.mid}>
+            <TextInput
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+              style={styles.input}
+            />
             <TextInput
               placeholder="Email address"
               value={email}
@@ -88,9 +102,17 @@ const handleProceed = async () => {
               />
             </View>
 
-            <Pressable style={styles.loginButton} onPress={handleProceed}>
+            <Pressable
+            style={[styles.loginButton, loading && { opacity: 0.7 }]}
+            onPress={handleProceed}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
               <Text style={styles.login}>PROCEED</Text>
-            </Pressable>
+            )}
+          </Pressable>
           </View>
         </View>
       </View>
@@ -118,7 +140,7 @@ const styles = StyleSheet.create({
     },
     heading: {
        position: 'absolute',
-       top: screenHeight * 0.25,    
+       top: screenHeight * 0.2,    
        left: '9%',                 
        justifyContent: "center",
        alignItems: "center",
@@ -130,7 +152,7 @@ const styles = StyleSheet.create({
     },
     mid: {
         flex: 1, 
-        marginTop: 60,
+        marginTop: 70,
         justifyContent: "center",
         alignItems: "center",
         paddingHorizontal: 20,
