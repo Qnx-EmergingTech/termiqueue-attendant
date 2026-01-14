@@ -3,30 +3,51 @@ import { createUserWithEmailAndPassword, getIdToken, signInWithEmailAndPassword 
 import { auth } from "../firebaseConfig";
 import { clearTripState, logoutUser, setToken } from "../utils/authStorage";
 
-export const signUp = async (email, password) => {
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+export const signUp = async (email, password, username) => {
   try {
     const userCred = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCred.user;
-    const idToken = await user.getIdToken(true);
+
+    const idToken = await getIdToken(user);
     await setToken(idToken);
+
+    const res = await fetch(`${API_BASE_URL}/profiles/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({
+        username: username.trim(),
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      console.log("Backend error response:", data);
+      await user.delete();
+      throw new Error(data.detail || "Failed to create profile");
+    }
+
     await clearTripState();
-    return { success: true, message: "Account created successfully!" };
+    return { success: true };
 
   } catch (err) {
-    let message = "Something went wrong. Please try again.";
+    console.error("Signup error:", err);
+
+    let message = err.message || "Something went wrong. Please try again.";
 
     switch (err.code) {
       case "auth/email-already-in-use":
-        message = "This email is already registered. Try logging in instead.";
+        message = "This email is already registered.";
         break;
       case "auth/invalid-email":
         message = "Please enter a valid email address.";
         break;
       case "auth/weak-password":
         message = "Password must be at least 6 characters.";
-        break;
-      case "auth/operation-not-allowed":
-        message = "Email/password accounts are not enabled in Firebase Auth.";
         break;
       case "auth/network-request-failed":
         message = "Network error. Please check your internet connection.";
@@ -37,37 +58,47 @@ export const signUp = async (email, password) => {
   }
 };
 
-export const logIn = async (email, password) => {
+export const logInWithUsername = async (username, password) => {
   try {
-    const userCred = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCred.user;
-    const idToken = await getIdToken(user, true);
-    await setToken(idToken);
-    await AsyncStorage.setItem("userToken", idToken);
+    const res = await fetch(`${API_BASE_URL}/profiles/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.trim(),
+        password,
+      }),
+    });
 
-    return { success: true, message: "Logged in successfully!" };
-  } catch (err) {
-    let message = "Something went wrong. Please try again.";
-
-    switch (err.code) {
-      case "auth/user-not-found":
-        message = "No account found with this email. Please sign up first.";
-        break;
-      case "auth/wrong-password":
-        message = "Incorrect password. Please try again.";
-        break;
-      case "auth/invalid-email":
-        message = "Invalid email address format.";
-        break;
-      case "auth/user-disabled":
-        message = "This account has been disabled. Contact support.";
-        break;
-      case "auth/too-many-requests":
-        message = "Too many failed login attempts. Please try again later.";
-        break;
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.detail || "Invalid username or password");
     }
 
-    return { success: false, message };
+    const data = await res.json();
+    const email = data.email;
+
+    if (!email) {
+      throw new Error("Email not found for this username");
+    }
+
+    const userCred = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCred.user;
+
+    const idToken = await getIdToken(user, true);
+
+    await setToken(idToken);
+    await AsyncStorage.setItem("firebaseIdToken", idToken);
+    await AsyncStorage.setItem("userId", user.uid);
+    await AsyncStorage.setItem("isLoggedIn", "true");
+
+    return { success: true };
+
+  } catch (err) {
+    console.error("Login error:", err);
+    return {
+      success: false,
+      message: err.message || "Login failed",
+    };
   }
 };
 

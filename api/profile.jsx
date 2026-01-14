@@ -17,7 +17,6 @@ export const createProfile = async (data) => {
 
     const payload = {
       ...data,
-      username: data.username,
       birthdate: data.birthdate
         ? new Date(data.birthdate).toISOString()
         : new Date("2000-01-01").toISOString(),

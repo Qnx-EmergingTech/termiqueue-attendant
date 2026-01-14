@@ -1,4 +1,4 @@
-import { Link, Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Link, Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { createProfile } from '../api/profile';
@@ -7,7 +7,6 @@ import { getToken, setUser } from "../utils/authStorage";
 
 export default function Kyc() {
   const router = useRouter();
-  const {username} = useLocalSearchParams();
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -38,7 +37,6 @@ const handleProceed = async () => {
   }
   try {
     const result = await createProfile({
-      username,
       first_name: firstName,
       middle_name: middleName,
       last_name: lastName,
@@ -47,7 +45,6 @@ const handleProceed = async () => {
     if (result.success) {
     await setUser({
         uid: result.uid, 
-        username,
         first_name: firstName,
         middle_name: middleName,
         last_name: lastName,

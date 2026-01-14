@@ -1,24 +1,30 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { logIn } from '../api/auth';
+import { logInWithUsername } from '../api/auth';
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    setError("");
-    const result = await logIn(email, password);
+const handleLogin = async () => {
+  setError("");
 
-    if (result.success) {
-      router.replace("/(tabs)/home"); 
-    } else {
-      setError(result.message);
-    }
-  };
+  if (!username.trim() || !password) {
+    setError("Username and password are required.");
+    return;
+  }
+
+  const result = await logInWithUsername(username, password);
+
+  if (result.success) {
+    router.replace("/(tabs)/home");
+  } else {
+    setError(result.message);
+  }
+};
 
   return (
     <>
@@ -29,7 +35,13 @@ export default function Login() {
           <Text style={styles.heading}>Welcome Back!</Text>
 
           <View style={styles.mid}>
-            <TextInput placeholder="Email address" value={email} onChangeText={setEmail} style={styles.input} />
+           <TextInput
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+            style={styles.input}
+          />
+
             <TextInput placeholder="Password" value={password} secureTextEntry onChangeText={setPassword} style={styles.input} />
 
             {error ? <Text style={{ color: 'red', marginTop: 5 }}>{error}</Text> : null}

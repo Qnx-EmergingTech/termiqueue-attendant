@@ -15,36 +15,21 @@ export default function Signup() {
 
 const handleProceed = async () => {
   setError("");
-  if (!accepted) {
-    setError("Please accept the privacy policy.");
-    return;
-  }
-  if (password !== confirmPassword) {
-    setError("Passwords do not match.");
-    return;
-  }
 
-  if (!username) {
-  setError("Username is required.");
-  return;
-  }
-  
-  if (!email) {
-    setError("Email is required.");
-    return;
-  }
+  if (!username.trim()) return setError("Username is required.");
+  if (!email.trim()) return setError("Email is required.");
+  if (!password || !confirmPassword) return setError("Password is required.");
+  if (password !== confirmPassword) return setError("Passwords do not match.");
+  if (!accepted) return setError("Please accept the privacy policy.");
 
-  const result = await signUp(email, password);
+  const result = await signUp(email, password, username);
+
   if (result.success) {
-      router.replace({
-        pathname: "/kyc",
-        params: { username, token: result.token }
-      });
+    router.replace("/kyc");
   } else {
     setError(result.message);
   }
 };
-
   return (
     <>
       <Stack.Screen
