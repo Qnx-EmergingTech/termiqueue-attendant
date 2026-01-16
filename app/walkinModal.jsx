@@ -1,12 +1,15 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from "react";
 import { Alert } from "react-native";
+import { addWalkInPassenger } from "../api/buses";
 import CustomizableModal from "../app/common/commonModal";
 
 export default function WalkInModal() {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
-  const { busId } = useLocalSearchParams(); 
+  const [loading, setLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const { busId } = useLocalSearchParams();
 
   if (!busId) {
     Alert.alert("Error", "Bus ID missing");
@@ -14,31 +17,63 @@ export default function WalkInModal() {
     return null;
   }
 
-    const handleConfirm = () => {
+  const handleAddWalkIn = async () => {
+    if (loading) return;
+
+    setLoading(true);
+
+    const result = await addWalkInPassenger(busId);
+
+    setLoading(false);
+
+    if (!result.success) {
+      Alert.alert("Error", result.message);
+      return;
+    }
+
     setVisible(false);
     setTimeout(() => {
       router.push({
-        pathname: "/qr",
-        params: { busId },
+        pathname: "/resultModal",
+        params: {
+          busId,
+          ticketNumber: result.passenger.ticket_number,
+        },
       });
     }, 10);
   };
 
-// same logic for Regular, but soon will adjust for Elderly/PWD?
-    const handleNext = () => {
+    const handleElderly = async () => {
+    if (cancelLoading) return;
+
+    setCancelLoading(true);
+
+    const result = await addWalkInPassenger(busId);
+
+    setCancelLoading(false);
+
+    if (!result.success) {
+      Alert.alert("Error", result.message);
+      return;
+    }
+
     setVisible(false);
     setTimeout(() => {
       router.push({
-        pathname: "/qr",
-        params: { busId },
+        pathname: "/resultModal",
+        params: {
+          busId,
+          ticketNumber: result.passenger.ticket_number,
+        },
       });
     }, 10);
   };
 
-      const closeAndGoHome = () => {
+  const closeAndGoHome = () => {
+    if (loading) return;
     setVisible(false);
     setTimeout(() => {
-      router.push("/scan");
+      router.push("/addpassengerModal");
     }, 10);
   };
 
@@ -46,16 +81,17 @@ export default function WalkInModal() {
     <CustomizableModal
       visible={visible}
       onClose={closeAndGoHome}
-      onCancel={handleNext}
-      onConfirm={handleConfirm}
+      onConfirm={handleAddWalkIn}
+      onCancel={handleElderly} // same logic for now
+      loading={loading}
+      cancelLoading={cancelLoading}
 
       title="What type of walk in passenger?"
-      //message="Scan passenger QR to update the passenger count"
+      message="Add a walk-in passenger to the bus queue"
       confirmText="Regular"
       cancelText="Elderly/PWD"
       icon={require('../assets/images/success.png')}
-      primaryColor="#096B72" 
+      primaryColor="#096B72"
     />
   );
 }
- 
