@@ -8,6 +8,7 @@ export default function WalkInModal() {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const { busId } = useLocalSearchParams();
 
   if (!busId) {
@@ -42,6 +43,32 @@ export default function WalkInModal() {
     }, 10);
   };
 
+    const handleElderly = async () => {
+    if (cancelLoading) return;
+
+    setCancelLoading(true);
+
+    const result = await addWalkInPassenger(busId);
+
+    setCancelLoading(false);
+
+    if (!result.success) {
+      Alert.alert("Error", result.message);
+      return;
+    }
+
+    setVisible(false);
+    setTimeout(() => {
+      router.push({
+        pathname: "/resultModal",
+        params: {
+          busId,
+          ticketNumber: result.passenger.ticket_number,
+        },
+      });
+    }, 10);
+  };
+
   const closeAndGoHome = () => {
     if (loading) return;
     setVisible(false);
@@ -55,8 +82,9 @@ export default function WalkInModal() {
       visible={visible}
       onClose={closeAndGoHome}
       onConfirm={handleAddWalkIn}
-      onCancel={handleAddWalkIn} // same logic for now
+      onCancel={handleElderly} // same logic for now
       loading={loading}
+      cancelLoading={cancelLoading}
 
       title="What type of walk in passenger?"
       message="Add a walk-in passenger to the bus queue"

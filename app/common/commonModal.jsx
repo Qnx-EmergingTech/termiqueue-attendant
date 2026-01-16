@@ -24,6 +24,7 @@ export default function CustomizableModal({
   primaryColor = "#096B72",
   showCancel = true,
   loading = false,
+  cancelLoading = false,
 }) {
 
         const renderMessage = (msg) => {
@@ -70,7 +71,8 @@ export default function CustomizableModal({
                 <Pressable
                   style={[styles.button, { backgroundColor: primaryColor }, loading && { opacity: 0.7 }]}
                   onPress={onConfirm}
-                  disabled={loading}
+                  disabled={loading || cancelLoading}
+
                 >
                   {loading ? (
                     <ActivityIndicator color="#fff" />
@@ -79,19 +81,26 @@ export default function CustomizableModal({
                   )}
                 </Pressable>
 
-                  {onCancel && (
-                    <Pressable
-                      style={[
-                        styles.cancelButton,
-                        { borderColor: primaryColor }
-                      ]}
-                      onPress={onCancel || onClose}
-                    >
+                {onCancel && (
+                  <Pressable
+                    style={[
+                      styles.cancelButton,
+                      { borderColor: primaryColor },
+                      cancelLoading && { opacity: 0.7 },
+                    ]}
+                    onPress={onCancel}
+                    disabled={loading || cancelLoading}
+
+                  >
+                    {cancelLoading ? (
+                      <ActivityIndicator color={primaryColor} />
+                    ) : (
                       <Text style={[styles.cancelText, { color: primaryColor }]}>
                         {cancelText}
                       </Text>
-                    </Pressable>
-                  )}
+                    )}
+                  </Pressable>
+                )}
 
               </View>
             </TouchableWithoutFeedback>
