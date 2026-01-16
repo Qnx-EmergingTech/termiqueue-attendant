@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import {
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 export default function CustomizableModal({
@@ -20,7 +21,9 @@ export default function CustomizableModal({
   cancelText = "Cancel",
   onConfirm,
   onCancel,
-  primaryColor = "#096B72"
+  primaryColor = "#096B72",
+  showCancel = true,
+  loading = false,
 }) {
 
         const renderMessage = (msg) => {
@@ -65,23 +68,30 @@ export default function CustomizableModal({
                     ) : null}
 
                 <Pressable
-                  style={[styles.button, { backgroundColor: primaryColor }]}
+                  style={[styles.button, { backgroundColor: primaryColor }, loading && { opacity: 0.7 }]}
                   onPress={onConfirm}
+                  disabled={loading}
                 >
-                  <Text style={styles.cbutton}>{confirmText}</Text>
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.cbutton}>{confirmText}</Text>
+                  )}
                 </Pressable>
 
-                <Pressable
-                  style={[
-                    styles.cancelButton,
-                    { borderColor: primaryColor }
-                  ]}
-                  onPress={onCancel || onClose}
-                >
-                  <Text style={[styles.cancelText, { color: primaryColor }]}>
-                    {cancelText}
-                  </Text>
-                </Pressable>
+                  {onCancel && (
+                    <Pressable
+                      style={[
+                        styles.cancelButton,
+                        { borderColor: primaryColor }
+                      ]}
+                      onPress={onCancel || onClose}
+                    >
+                      <Text style={[styles.cancelText, { color: primaryColor }]}>
+                        {cancelText}
+                      </Text>
+                    </Pressable>
+                  )}
 
               </View>
             </TouchableWithoutFeedback>

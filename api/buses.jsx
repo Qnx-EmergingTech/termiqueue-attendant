@@ -280,6 +280,39 @@ export const scanQr = async (busId, qrJson) => {
   }
 };
 
+export const addWalkInPassenger = async (busId) => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/manual-add`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = data.detail || "Failed to add walk-in passenger";
+      throw new Error(msg);
+    }
+
+    return {
+      success: true,
+      passenger: data.passenger,
+      message: data.message,
+    };
+  } catch (error) {
+    console.error("Add walk-in passenger error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
 export const getAllBuses = async () => {
   try {
     const idToken = await getToken();
