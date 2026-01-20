@@ -6,7 +6,6 @@ import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import { Menu, Provider as PaperProvider } from 'react-native-paper';
 import { getMyBus } from "../../api/buses";
-import { getTripState } from "../../utils/authStorage";
 import LogoutModal from "../logoutModal";
 
 
@@ -30,28 +29,41 @@ export default function Home() {
     setLogoutVisible(true); 
   };
 
-    const loadTripState = async () => {
-      const state = await getTripState();
-      if (state?.tripStatus) setTripStatus(state.tripStatus);
-      if (state?.buttonLabel) setActionButtonLabel(state.buttonLabel);
-    };
+  const mapBusStatusToTripStatus = (busStatus) => {
+  switch (busStatus) {
+    case "available":
+      return "idle";
+    case "active":
+      return "active";
+    case "arrived":
+      return "arrived";
+    case "in_transit":
+      return "ongoing";
+    default:
+      return "idle";
+  }
+};
 
+const fetchMyBus = async () => {
+  setIsFetchingBus(true);
+  try {
+    const result = await getMyBus();
+    if (result.success && result.bus) {
+      setMyBus(result.bus);
 
-  const fetchMyBus = async () => {
-    setIsFetchingBus(true);
-    try {
-      const result = await getMyBus();
-      if (result.success && result.bus) {
-        setMyBus(result.bus);
-      } else {
-        console.log("No assigned bus or failed to fetch.");
-      }
-    } catch (err) {
-      console.error("Error fetching my bus:", err);
-    }finally {
+      const derivedStatus = mapBusStatusToTripStatus(result.bus.status);
+      setTripStatus(derivedStatus);
+      setActionButtonLabel("");
+    } else {
+      console.log("No assigned bus or failed to fetch.");
+    }
+  } catch (err) {
+    console.error("Error fetching my bus:", err);
+  } finally {
     setIsFetchingBus(false);
   }
-  };
+};
+
 
   useEffect(() => {
     (async () => {
@@ -71,19 +83,18 @@ export default function Home() {
           });
         }
       );
-      await loadTripState();
       await fetchMyBus();
     })();
   }, []);
 
-      useEffect(() => {
-        if (!actionButtonLabel) {
-          if (tripStatus === "idle") setActionButtonLabel("Set Active Status");
-          else if (tripStatus === "active") setActionButtonLabel("Update Status");
-          else if (tripStatus === "arrived") setActionButtonLabel("Start Your Trip");
-          else if (tripStatus === "ongoing") setActionButtonLabel("Finish Trip");
-        }
-      }, [tripStatus]);
+  useEffect(() => {
+    if (!actionButtonLabel) {
+      if (tripStatus === "idle") setActionButtonLabel("Set Active Status");
+      else if (tripStatus === "active") setActionButtonLabel("Update Status");
+      else if (tripStatus === "arrived") setActionButtonLabel("Start Your Trip");
+      else if (tripStatus === "ongoing") setActionButtonLabel("Finish Trip");
+    }
+  }, [tripStatus]);
 
   return (
   <PaperProvider>
