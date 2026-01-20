@@ -205,7 +205,7 @@ const fetchMyBus = async () => {
 
 
           <Text style={styles.time}>
-            Terminal 2 - 45 mins
+            Keep an eye on your route and schedule. 
           </Text>
         </View>
 
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
    box: {
-    backgroundColor: "#333242",   
+    backgroundColor: "#D5D5D5",   
     borderRadius: 8,         
     paddingVertical: 16,
     paddingHorizontal: 24,             
@@ -320,12 +320,12 @@ const styles = StyleSheet.create({
    status: {
     fontFamily: "Roboto_700Bold",
     fontSize: 18,
-    color: "white",
+    color: "#3F414E",
    },
    time: {
     fontFamily: "Roboto_500Medium",
     fontSize: 11,
-    color: "white",
+    color: "#3F414E",
    },
    info: {
     gap: 6,
