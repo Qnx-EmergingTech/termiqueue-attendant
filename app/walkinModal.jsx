@@ -73,7 +73,7 @@ export default function WalkInModal() {
     if (loading) return;
     setVisible(false);
     setTimeout(() => {
-      router.push("/addpassengerModal");
+      router.push({pathname: "/addpassengerModal", params: {busId} });
     }, 10);
   };
 

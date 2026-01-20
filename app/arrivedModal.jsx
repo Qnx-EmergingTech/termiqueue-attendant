@@ -78,7 +78,7 @@ export default function arrivedModal() {
                 {loading ? "Updating..." : "Confirm"}
               </Text>
             </Pressable>
-              <Pressable style={styles.cancelButton} onPress={handleConfirm}>
+              <Pressable style={styles.cancelButton} onPress={closeAndGoHome}>
                 <Text style={styles.cancel}>Cancel</Text>
               </Pressable>
             </View>

@@ -18,7 +18,7 @@ export default function AddPassengerModal() {
     setVisible(false);
     setTimeout(() => {
       router.push({
-        pathname: "/scanModal",
+        pathname: "/qr",
         params: { busId },
       });
     }, 10);

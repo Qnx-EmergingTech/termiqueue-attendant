@@ -1,13 +1,15 @@
+import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { scanQr } from "../api/buses";
+
 
 export default function Qr() {
   const router = useRouter();
   const { busId } = useLocalSearchParams();
-
+  const [remainingSeats, setRemainingSeats] = useState(null);
   const [permission, requestPermission] = useCameraPermissions();;
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -23,28 +25,43 @@ export default function Qr() {
     );
   }
 
-  const handleScan = async ({ data }) => {
-    if (isProcessing) return;
-    setIsProcessing(true);
+const handleScan = async ({ data }) => {
+  if (isProcessing) return;
 
+  setIsProcessing(true);
+
+  try {
     const result = await scanQr(busId.toString(), data);
 
     if (result.success) {
+      // Optionally update remaining seats for UX
+      if (typeof result.remaining_seats === "number") {
+        setRemainingSeats(result.remaining_seats);
+      }
+
       Alert.alert("Success", "Passenger scanned", [
-        {
-          text: "OK",
-          onPress: () => {
-            setIsProcessing(false);
-            router.replace("/passenger");
-          },
-        },
-      ]);
-    } else {
-      Alert.alert("Error", result.message, [
         { text: "OK", onPress: () => setIsProcessing(false) },
       ]);
+    } else {
+      // Handle full bus
+      if (result.code === "BUS_FULL") {
+        Alert.alert("Bus Full", "This bus has reached its maximum capacity.", [
+          { text: "Go Back", onPress: () => router.replace("/scan") },
+        ]);
+      } else {
+        Alert.alert("Error", result.message, [
+          { text: "OK", onPress: () => setIsProcessing(false) },
+        ]);
+      }
     }
-  };
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Error", "Something went wrong", [
+      { text: "OK", onPress: () => setIsProcessing(false) },
+    ]);
+  }
+};
+
 
   if (!permission?.granted) {
     return <Text>Camera permission required</Text>;
@@ -59,6 +76,15 @@ export default function Qr() {
         onBarcodeScanned={handleScan}
       />
 
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable onPress={() => router.replace("/scan")} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={22} color="black" />
+        </Pressable>
+        <Text style={styles.headerTitle}>Scan Passenger&apos;s QR</Text>
+      </View>
+
+      {/* Overlay */}
       <View style={styles.overlay}>
         <View style={styles.scanBox}>
           <View style={[styles.corner, styles.topLeft]} />
@@ -72,10 +98,32 @@ export default function Qr() {
 }
 
 const BORDER_COLOR = "white";
-const BORDER_SIZE = 40;
+const BORDER_SIZE = 30;
 const BORDER_WIDTH = 4;
 
 const styles = StyleSheet.create({
+    header: {
+    position: "absolute",
+    top: 0,
+    width: "100%",
+    height: 56,
+    backgroundColor: "white",
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    zIndex: 10,
+  },
+
+  backButton: {
+    marginRight: 10,
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "black",
+  },
   container: {
     flex: 1,
     backgroundColor: "black",
