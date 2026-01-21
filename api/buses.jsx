@@ -313,6 +313,44 @@ export const addWalkInPassenger = async (busId) => {
   }
 };
 
+export const addPrivilegedPassenger = async (busId, force = false) => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/manual-add/privileged`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ force }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      const msg = data.message || "Failed to add privileged passenger";
+      throw new Error(msg);
+    }
+
+    return {
+      success: true,
+      passengerTicket: data.ticket_number,
+      message: data.message,
+      forced: data.forced,
+      remainingPrioritySeats: data.remaining_priority_seats,
+      remainingCapacity: data.remaining_capacity,
+    };
+  } catch (error) {
+    console.error("Add privileged passenger error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
 export const getAllBuses = async () => {
   try {
     const idToken = await getToken();
