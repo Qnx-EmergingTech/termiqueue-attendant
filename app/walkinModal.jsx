@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from "react";
 import { Alert } from "react-native";
-import { addWalkInPassenger } from "../api/buses";
+import { addPrivilegedPassenger, addWalkInPassenger } from "../api/buses";
 import CustomizableModal from "../app/common/commonModal";
 
 export default function WalkInModal() {
@@ -43,12 +43,12 @@ export default function WalkInModal() {
     }, 10);
   };
 
-    const handleElderly = async () => {
+  const handleElderly = async () => {
     if (cancelLoading) return;
 
     setCancelLoading(true);
 
-    const result = await addWalkInPassenger(busId);
+    const result = await addPrivilegedPassenger(busId);
 
     setCancelLoading(false);
 
@@ -63,7 +63,7 @@ export default function WalkInModal() {
         pathname: "/resultModal",
         params: {
           busId,
-          ticketNumber: result.passenger.ticket_number,
+          ticketNumber: result.passengerTicket,
         },
       });
     }, 10);
@@ -73,7 +73,7 @@ export default function WalkInModal() {
     if (loading) return;
     setVisible(false);
     setTimeout(() => {
-      router.push({pathname: "/addpassengerModal", params: {busId} });
+      router.push({ pathname: "/addpassengerModal", params: { busId } });
     }, 10);
   };
 
@@ -82,7 +82,7 @@ export default function WalkInModal() {
       visible={visible}
       onClose={closeAndGoHome}
       onConfirm={handleAddWalkIn}
-      onCancel={handleElderly} // same logic for now
+      onCancel={handleElderly}
       loading={loading}
       cancelLoading={cancelLoading}
 
