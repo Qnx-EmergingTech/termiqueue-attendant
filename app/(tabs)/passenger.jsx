@@ -35,10 +35,13 @@ const Passenger = () => {
     }
   };
 
-  const queuePassengers = passengers;
   const boardedPassengers = passengers.filter((p) => p.status === "boarded");
 
-  const onboard = boardedPassengers.length;
+  const queuePassengers = passengers.filter((p) => p.status !== "boarded");
+
+  const boardedCount = boardedPassengers.length;
+  const queueCount = queuePassengers.length;
+  const remainingCapacity = Math.max(capacity - boardedCount, 0);
 
   const renderPassenger = ({ item }) => {
     const isHere = item.status === "boarded";
@@ -127,15 +130,27 @@ const Passenger = () => {
       />
 
       {/* Counter bubble */}
-      <View style={styles.counterBubble}>
-        <Text style={styles.counterTop}>
-          {String(onboard).padStart(2, "0")}
-        </Text>
+      {activeTab === "queue" ? (
+        <View style={styles.counterBubble}>
+          <Text style={styles.counterTop}>
+            {String(queueCount).padStart(2, "0")}
+          </Text>
 
-        <View style={styles.diagonalLine} />
+          <View style={styles.diagonalLine} />
 
-        <Text style={styles.counterBottom}>{capacity}</Text>
-      </View>
+          <Text style={styles.counterBottom}>{remainingCapacity}</Text>
+        </View>
+      ) : (
+        <View style={styles.counterBubble}>
+          <Text style={styles.counterTop}>
+            {String(boardedCount).padStart(2, "0")}
+          </Text>
+
+          <View style={styles.diagonalLine} />
+
+          <Text style={styles.counterBottom}>{capacity}</Text>
+        </View>
+      )}
     </View>
   );
 };
