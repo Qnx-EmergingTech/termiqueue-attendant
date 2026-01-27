@@ -5,11 +5,6 @@ import CustomizableModal from "../app/common/commonModal";
 export default function LogoutModal({ visible, onClose }) {
   const router = useRouter();
 
-  const handleClose = () => {
-    setVisible(false);
-    setTimeout(() => router.replace("/(tabs)/home"), 150);
-  };
-
   const handleConfirm = async () => {
     const result = await signOutAccount();
     if (result.success) {
@@ -34,10 +29,8 @@ export default function LogoutModal({ visible, onClose }) {
         onBackdropPress={onClose}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
-
         icon={require("../assets/images/alert.png")}
         title="Are you sure you want to logout?"
-        
         confirmText="Confirm"
         cancelText="Cancel"
         primaryColor="#096B72"
