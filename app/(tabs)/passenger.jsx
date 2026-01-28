@@ -35,6 +35,26 @@ const Passenger = () => {
     }
   };
 
+  const shouldSkipMasking = (name) => {
+    return (
+      name.startsWith("Walk-in #") || name.startsWith("Priority Walk-in #")
+    );
+  };
+
+  const maskName = (name) => {
+    if (!name || shouldSkipMasking(name)) {
+      return name;
+    }
+
+    return name
+      .split(" ")
+      .map((part) => {
+        if (part.length <= 2) return part;
+        return part.slice(0, 2) + "*".repeat(part.length - 2);
+      })
+      .join(" ");
+  };
+
   const boardedPassengers = passengers.filter((p) => p.status === "boarded");
 
   const queuePassengers = passengers.filter((p) => p.status !== "boarded");
@@ -61,7 +81,7 @@ const Passenger = () => {
         </View>
 
         <View>
-          <Text style={styles.passengerId}>{item.name}</Text>
+          <Text style={styles.passengerId}>{maskName(item.name)}</Text>
           <Text style={[styles.status, isHere && styles.statusHere]}>
             {isHere ? "Already here" : "Not yet boarded"}
           </Text>
@@ -123,7 +143,9 @@ const Passenger = () => {
                 ? "Refreshing..."
                 : loading
                   ? "Loading passengers..."
-                  : "No Passengers at This Time"}
+                  : activeTab === "queue"
+                    ? "No Queued Passengers"
+                    : "No Boarded Passengers"}
             </Text>
           </View>
         }
