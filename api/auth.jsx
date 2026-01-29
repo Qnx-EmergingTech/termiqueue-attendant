@@ -1,5 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createUserWithEmailAndPassword, getIdToken, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  getIdToken,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { clearTripState, logoutUser, setToken } from "../utils/authStorage";
 
@@ -7,7 +11,11 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export const signUp = async (email, password, username) => {
   try {
-    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    const userCred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     const user = userCred.user;
 
     const idToken = await getIdToken(user);
@@ -33,7 +41,6 @@ export const signUp = async (email, password, username) => {
 
     await clearTripState();
     return { success: true };
-
   } catch (err) {
     console.error("Signup error:", err);
 
@@ -57,28 +64,34 @@ export const signUp = async (email, password, username) => {
     return { success: false, message };
   }
 };
-
-export const logInWithUsername = async (username, password) => {
+export const logInWithUsername = async (identifier, password) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/profiles/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: username.trim(),
-        password,
-      }),
-    });
+    const trimmed = identifier.trim();
+    const isEmail = /\S+@\S+\.\S+/.test(trimmed);
 
-    if (!res.ok) {
+    let email = trimmed;
+
+    if (!isEmail) {
+      const res = await fetch(`${API_BASE_URL}/profiles/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: trimmed,
+          password,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Invalid username or password");
+      }
+
       const data = await res.json();
-      throw new Error(data.detail || "Invalid username or password");
-    }
+      email = data.email;
 
-    const data = await res.json();
-    const email = data.email;
-
-    if (!email) {
-      throw new Error("Email not found for this username");
+      if (!email) {
+        throw new Error("Email not found for this username");
+      }
     }
 
     const userCred = await signInWithEmailAndPassword(auth, email, password);
@@ -92,7 +105,6 @@ export const logInWithUsername = async (username, password) => {
     await AsyncStorage.setItem("isLoggedIn", "true");
 
     return { success: true };
-
   } catch (err) {
     console.error("Login error:", err);
     return {

@@ -157,20 +157,20 @@ const Passenger = () => {
           <Text style={styles.counterTop}>
             {String(queueCount).padStart(2, "0")}
           </Text>
-
           <View style={styles.diagonalLine} />
-
-          <Text style={styles.counterBottom}>{remainingCapacity}</Text>
+          <Text style={styles.counterBottom}>
+            {String(remainingCapacity ?? 0).padStart(2, "0")}
+          </Text>
         </View>
       ) : (
         <View style={styles.counterBubble}>
           <Text style={styles.counterTop}>
             {String(boardedCount).padStart(2, "0")}
           </Text>
-
           <View style={styles.diagonalLine} />
-
-          <Text style={styles.counterBottom}>{capacity}</Text>
+          <Text style={styles.counterBottom}>
+            {String(capacity ?? 0).padStart(2, "0")}
+          </Text>
         </View>
       )}
     </View>
