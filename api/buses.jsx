@@ -2,7 +2,8 @@ import { getToken } from "../utils/authStorage";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-const joinUrl = (base, path) => `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+const joinUrl = (base, path) =>
+  `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 
 export const getMyBus = async () => {
   try {
@@ -49,7 +50,7 @@ export const createBus = async (busData) => {
     const data = await response.json();
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map(d => d.msg || JSON.stringify(d)).join(", ")
+        ? data.detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
         : data.detail || "Failed to create bus";
       throw new Error(msg);
     }
@@ -79,7 +80,7 @@ export const claimBus = async (busId) => {
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map(d => d.msg || JSON.stringify(d)).join(", ")
+        ? data.detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
         : data.detail || "Failed to claim bus";
       throw new Error(msg);
     }
@@ -109,7 +110,7 @@ export const arriveBus = async (busId) => {
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map(d => d.msg).join(", ")
+        ? data.detail.map((d) => d.msg).join(", ")
         : data.detail || "Failed to set bus as arrived";
       throw new Error(msg);
     }
@@ -140,7 +141,7 @@ export const departBus = async (busId) => {
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map(d => d.msg).join(", ")
+        ? data.detail.map((d) => d.msg).join(", ")
         : data.detail || "Failed to depart bus";
       throw new Error(msg);
     }
@@ -179,7 +180,7 @@ export const updateBusStatus = async (busId, status) => {
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map(d => d.msg).join(", ")
+        ? data.detail.map((d) => d.msg).join(", ")
         : data.detail || "Failed to update bus";
       throw new Error(msg);
     }
@@ -213,11 +214,20 @@ export const getAttendantPassengers = async () => {
       throw new Error(msg);
     }
 
-    return { success: true, passengers: data.passengers, capacity: data.capacity };
+    return {
+      success: true,
+      passengers: data.passengers || [],
+      capacity: data.capacity,
+      lastPassengerScanned: data.last_passenger_scanned || null,
+    };
   } catch (error) {
     console.error("Passenger API error:", error);
-    return { success: false, passengers: [], capacity: 0 };
-
+    return {
+      success: false,
+      passengers: [],
+      capacity: 0,
+      lastPassengerScanned: null,
+    };
   }
 };
 
