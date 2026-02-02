@@ -80,19 +80,18 @@ export default function Scan() {
   };
 
   const getLatestActivity = (apiLastScanned, passengers = []) => {
-    if (apiLastScanned?.timestamp) {
+    if (apiLastScanned?.timestamp && apiLastScanned.status !== "waiting") {
       return apiLastScanned;
     }
 
-    if (passengers.length > 0) {
-      const sorted = [...passengers].sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
-      );
+    const validActivities = passengers.filter((p) => p.status === "boarded");
 
-      return sorted[0];
+    if (validActivities.length === 0) {
+      return null;
     }
-
-    return null;
+    return validActivities.sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+    )[0];
   };
 
   const formatTime = (isoString) => {
