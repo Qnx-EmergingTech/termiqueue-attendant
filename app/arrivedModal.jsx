@@ -36,12 +36,16 @@ export default function arrivedModal() {
         throw new Error(result.message);
       }
 
-      await setQueueId(result.queue_id);
+      if (!result.queueId) {
+        throw new Error("Queue ID not returned by server");
+      }
+
+      await setQueueId(result.queueId);
       await setTripState("arrived", "Start Your Trip");
 
       router.replace("/(tabs)/home");
     } catch (err) {
-      alert("Something went wrong. Please try again.");
+      console.error("Arrive bus failed:", err.message);
     } finally {
       setLoading(false);
     }
