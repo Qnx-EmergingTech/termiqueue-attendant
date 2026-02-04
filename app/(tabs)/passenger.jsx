@@ -8,6 +8,11 @@ import {
   View,
 } from "react-native";
 import { getAttendantPassengers } from "../../api/buses";
+import {
+  clearQueueId,
+  clearTripState,
+  getQueueId,
+} from "../../utils/authStorage";
 
 const Passenger = () => {
   const [activeTab, setActiveTab] = useState("queue");
@@ -18,6 +23,60 @@ const Passenger = () => {
 
   useEffect(() => {
     fetchPassengers();
+  }, []);
+
+  useEffect(() => {
+    let ws;
+
+    const connectWS = async () => {
+      const queueId = await getQueueId();
+      if (!queueId) return;
+
+      ws = new WebSocket(
+        `wss://api.yourdomain.com/queues/ws/queues/${queueId}`,
+      );
+
+      ws.onmessage = async (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "BUS_DEPARTED") {
+          await clearQueueId();
+          await clearTripState();
+        }
+
+        setPassengers((prev) => applyQueueEvent(prev, data));
+      };
+
+      ws.onerror = (e) => console.log("WS error", e);
+    };
+
+    connectWS();
+
+    function applyQueueEvent(passengers, event) {
+      switch (event.type) {
+        case "PASSENGER_QUEUED":
+          if (passengers.some((p) => p.id === event.passenger.id)) {
+            return passengers;
+          }
+          return [...passengers, event.passenger];
+
+        case "PASSENGER_BOARDED":
+          return passengers.map((p) =>
+            p.id === event.passenger.id ? { ...p, status: "boarded" } : p,
+          );
+
+        case "PASSENGER_LEFT":
+          return passengers.filter((p) => p.id !== event.passenger.id);
+
+        case "BUS_DEPARTED":
+          return [];
+
+        default:
+          return passengers;
+      }
+    }
+
+    return () => ws?.close();
   }, []);
 
   const fetchPassengers = async () => {
