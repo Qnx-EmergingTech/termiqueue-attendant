@@ -12,6 +12,7 @@ import {
   clearQueueId,
   clearTripState,
   getQueueId,
+  getTripState,
 } from "../../utils/authStorage";
 
 const Passenger = () => {
@@ -24,59 +25,69 @@ const Passenger = () => {
   useEffect(() => {
     fetchPassengers();
   }, []);
-
   useEffect(() => {
     let ws;
+    let isActive = true;
 
     const connectWS = async () => {
-      const queueId = await getQueueId();
-      if (!queueId) return;
+      try {
+        const tripStatus = await getTripState();
+        if (tripStatus !== "arrived") return;
 
-      ws = new WebSocket(
-        `wss://api.yourdomain.com/queues/ws/queues/${queueId}`,
-      );
+        const queueId = await getQueueId();
+        if (!queueId) return;
 
-      ws.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
+        ws = new WebSocket(
+          `wss://api.yourdomain.com/queues/ws/queues/${queueId}`,
+        );
 
-        if (data.type === "BUS_DEPARTED") {
-          await clearQueueId();
-          await clearTripState();
-        }
+        ws.onmessage = (event) => {
+          if (!isActive) return;
 
-        setPassengers((prev) => applyQueueEvent(prev, data));
-      };
+          const data = JSON.parse(event.data);
 
-      ws.onerror = (e) => console.log("WS error", e);
+          setPassengers((prev) => applyQueueEvent(prev, data));
+
+          if (data.type === "BUS_DEPARTED") {
+            clearQueueId();
+            clearTripState();
+            ws?.close();
+          }
+        };
+
+        ws.onerror = (e) => console.log("WS error:", e);
+        ws.onclose = (e) =>
+          console.log("WS connection closed", e.code, e.reason);
+      } catch (err) {
+        console.log("Failed to connect WS:", err);
+      }
     };
 
     connectWS();
 
-    function applyQueueEvent(passengers, event) {
+    const applyQueueEvent = (passengers, event) => {
       switch (event.type) {
         case "PASSENGER_QUEUED":
-          if (passengers.some((p) => p.id === event.passenger.id)) {
+          if (passengers.some((p) => p.id === event.passenger.id))
             return passengers;
-          }
           return [...passengers, event.passenger];
-
         case "PASSENGER_BOARDED":
           return passengers.map((p) =>
             p.id === event.passenger.id ? { ...p, status: "boarded" } : p,
           );
-
         case "PASSENGER_LEFT":
           return passengers.filter((p) => p.id !== event.passenger.id);
-
         case "BUS_DEPARTED":
           return [];
-
         default:
           return passengers;
       }
-    }
+    };
 
-    return () => ws?.close();
+    return () => {
+      isActive = false;
+      ws?.close();
+    };
   }, []);
 
   const fetchPassengers = async () => {
