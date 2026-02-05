@@ -22,73 +22,106 @@ const Passenger = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const getWsBaseUrl = () => {
+    const base = process.env.EXPO_PUBLIC_API_BASE_URL;
+    return base.replace(/^http/, "ws");
+  };
+
   useEffect(() => {
     fetchPassengers();
   }, []);
+
   useEffect(() => {
     let ws;
     let isActive = true;
+    let pollInterval = null;
+
+    const startPolling = () => {
+      if (pollInterval) return;
+
+      pollInterval = setInterval(() => {
+        fetchPassengers();
+      }, 5000);
+    };
+
+    const stopPolling = () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    };
 
     const connectWS = async () => {
       try {
         const tripStatus = await getTripState();
-        if (tripStatus !== "arrived") return;
-
         const queueId = await getQueueId();
-        if (!queueId) return;
 
-        ws = new WebSocket(
-          `wss://api.yourdomain.com/queues/ws/queues/${queueId}`,
-        );
+        if (tripStatus !== "arrived" || !queueId) {
+          startPolling();
+          return;
+        }
+
+        const wsBaseUrl = getWsBaseUrl();
+        const wsUrl = `${wsBaseUrl}/queues/ws/queues/${queueId}`;
+
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          stopPolling();
+          fetchPassengers();
+        };
 
         ws.onmessage = (event) => {
           if (!isActive) return;
-
           const data = JSON.parse(event.data);
-
           setPassengers((prev) => applyQueueEvent(prev, data));
 
           if (data.type === "BUS_DEPARTED") {
             clearQueueId();
             clearTripState();
-            ws?.close();
+            ws.close();
           }
         };
 
-        ws.onerror = (e) => console.log("WS error:", e);
-        ws.onclose = (e) =>
-          console.log("WS connection closed", e.code, e.reason);
+        ws.onerror = (e) => {
+          startPolling();
+        };
+
+        ws.onclose = (e) => {
+          startPolling();
+        };
       } catch (err) {
-        console.log("Failed to connect WS:", err);
+        startPolling();
       }
     };
 
     connectWS();
 
-    const applyQueueEvent = (passengers, event) => {
-      switch (event.type) {
-        case "PASSENGER_QUEUED":
-          if (passengers.some((p) => p.id === event.passenger.id))
-            return passengers;
-          return [...passengers, event.passenger];
-        case "PASSENGER_BOARDED":
-          return passengers.map((p) =>
-            p.id === event.passenger.id ? { ...p, status: "boarded" } : p,
-          );
-        case "PASSENGER_LEFT":
-          return passengers.filter((p) => p.id !== event.passenger.id);
-        case "BUS_DEPARTED":
-          return [];
-        default:
-          return passengers;
-      }
-    };
-
     return () => {
       isActive = false;
       ws?.close();
+      stopPolling();
     };
   }, []);
+
+  const applyQueueEvent = (passengers, event) => {
+    switch (event.type) {
+      case "PASSENGER_QUEUED":
+        if (passengers.some((p) => p.id === event.passenger.id))
+          return passengers;
+        return [...passengers, event.passenger];
+      case "PASSENGER_BOARDED":
+        return passengers.map((p) =>
+          p.id === event.passenger.id ? { ...p, status: "boarded" } : p,
+        );
+      case "PASSENGER_LEFT":
+        return passengers.filter((p) => p.id !== event.passenger.id);
+      case "BUS_DEPARTED":
+        return [];
+      default:
+        return passengers;
+    }
+  };
 
   const fetchPassengers = async () => {
     try {
