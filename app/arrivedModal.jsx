@@ -75,7 +75,7 @@ export default function arrivedModal() {
                   Want to set your status to "has Arrived"?
                 </Text>
                 <Text style={styles.text}>
-                  Setting your status to “has arrive” will let people on queue
+                  Setting your status to “has arrived” will let people on queue
                   know that you are already and waiting for them to board
                 </Text>
                 <Pressable
