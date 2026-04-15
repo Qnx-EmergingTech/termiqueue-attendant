@@ -115,10 +115,17 @@ export const arriveBus = async (busId) => {
       throw new Error(msg);
     }
 
-    return { success: true, message: data };
+    return {
+      success: true,
+      queueId: data.queue_id,
+      message: data.message,
+    };
   } catch (error) {
     console.error("Arrive bus error:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 };
 

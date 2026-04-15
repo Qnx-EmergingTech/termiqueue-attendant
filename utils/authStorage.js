@@ -1,11 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAuth, signOut } from "firebase/auth";
 
-
 const TOKEN_KEY = "firebaseIdToken";
 const USER_KEY = "userData";
 const TRIP_STATUS_KEY = "tripStatus";
 const TRIP_BUTTON_KEY = "tripButtonLabel";
+const QUEUE_ID_KEY = "activeQueueId";
 
 export const setToken = async (token) => {
   try {
@@ -77,7 +77,10 @@ export const setTripState = async (status, buttonLabel) => {
 
 export const getTripState = async () => {
   try {
-    const values = await AsyncStorage.multiGet([TRIP_STATUS_KEY, TRIP_BUTTON_KEY]);
+    const values = await AsyncStorage.multiGet([
+      TRIP_STATUS_KEY,
+      TRIP_BUTTON_KEY,
+    ]);
     const tripStatus = values[0]?.[1] ?? "idle";
     const buttonLabel = values[1]?.[1] ?? "Set Active Status";
     return { tripStatus, buttonLabel };
@@ -87,11 +90,22 @@ export const getTripState = async () => {
   }
 };
 
-
 export const clearTripState = async () => {
   try {
     await AsyncStorage.multiRemove([TRIP_STATUS_KEY, TRIP_BUTTON_KEY]);
   } catch (e) {
     console.error("Error clearing trip state:", e);
   }
+};
+
+export const setQueueId = async (queueId) => {
+  await AsyncStorage.setItem(QUEUE_ID_KEY, queueId);
+};
+
+export const getQueueId = async () => {
+  return await AsyncStorage.getItem(QUEUE_ID_KEY);
+};
+
+export const clearQueueId = async () => {
+  await AsyncStorage.removeItem(QUEUE_ID_KEY);
 };
