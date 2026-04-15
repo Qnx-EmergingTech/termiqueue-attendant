@@ -8,19 +8,19 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "http://44.202.107.196:8080"
+        "EXPO_PUBLIC_API_BASE_URL": "https://epipetalous-ashton-casuistically.ngrok-free.dev"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "http://44.202.107.196:8080"
+        "EXPO_PUBLIC_API_BASE_URL": "https://epipetalous-ashton-casuistically.ngrok-free.dev"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "http://44.202.107.196:8080"
+        "EXPO_PUBLIC_API_BASE_URL": "https://epipetalous-ashton-casuistically.ngrok-free.dev"
       }
     }
   },

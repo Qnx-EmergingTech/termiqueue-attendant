@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { addPrivilegedPassenger, addWalkInPassenger } from "../api/buses";
@@ -85,12 +85,11 @@ export default function WalkInModal() {
       onCancel={handleElderly}
       loading={loading}
       cancelLoading={cancelLoading}
-
       title="What type of walk in passenger?"
-      message="Add a walk-in passenger to the bus queue"
+      message="Add a walk-in passenger to the queue"
       confirmText="Regular"
       cancelText="Elderly/PWD"
-      icon={require('../assets/images/success.png')}
+      icon={require("../assets/images/success.png")}
       primaryColor="#096B72"
     />
   );

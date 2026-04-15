@@ -1,20 +1,18 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { claimBus, getAllBuses, releaseBus } from "../api/buses";
 import BusCard from "./common/busCard";
-
-
 
 export default function ReRoute() {
   const router = useRouter();
@@ -25,43 +23,42 @@ export default function ReRoute() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
-
   useEffect(() => {
     const fetchBuses = async () => {
-     setFetching(true);
+      setFetching(true);
       const res = await getAllBuses();
       if (res.success) {
-        setBuses(res.buses.filter(bus => bus.status === "available"));
+        setBuses(res.buses.filter((bus) => bus.status === "available"));
       }
       setFetching(false);
     };
     fetchBuses();
   }, []);
 
-const handleChangeBus = async () => {
-  if (!selectedBusId) {
-    return Alert.alert("Select a bus", "Please select a new bus.");
-  }
-
-  setLoading(true);
-
-  if (currentBusId) {
-    const releaseRes = await releaseBus(currentBusId);
-    if (!releaseRes.success) {
-      setLoading(false);
-      return Alert.alert("Error", releaseRes.message);
+  const handleChangeBus = async () => {
+    if (!selectedBusId) {
+      return Alert.alert("Select a bus", "Please select a new bus.");
     }
-  }
 
-  const claimRes = await claimBus(selectedBusId);
-  setLoading(false);
+    setLoading(true);
 
-  if (!claimRes.success) {
-    return Alert.alert("Error", claimRes.message);
-  }
+    if (currentBusId) {
+      const releaseRes = await releaseBus(currentBusId);
+      if (!releaseRes.success) {
+        setLoading(false);
+        return Alert.alert("Error", releaseRes.message);
+      }
+    }
 
-  router.replace("/home");
-};
+    const claimRes = await claimBus(selectedBusId);
+    setLoading(false);
+
+    if (!claimRes.success) {
+      return Alert.alert("Error", claimRes.message);
+    }
+
+    router.replace("/home");
+  };
 
   return (
     <>
@@ -80,39 +77,40 @@ const handleChangeBus = async () => {
           style={styles.image}
         />
 
-        <Text style={styles.heading}>Change Bus</Text>
+        <Text style={styles.heading}>Change Shuttle</Text>
 
         <ScrollView
           style={styles.scrollArea}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-            {fetching ? (
+          {fetching ? (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#096B72" />
-                <Text style={styles.loadingText}>Loading available buses...</Text>
+              <ActivityIndicator size="large" color="#096B72" />
+              <Text style={styles.loadingText}>
+                Loading available shuttles...
+              </Text>
             </View>
-            ) : buses.length === 0 ? (
+          ) : buses.length === 0 ? (
             <View style={styles.loadingContainer}>
-                <Text style={styles.loadingText}>No available buses at the moment</Text>
+              <Text style={styles.loadingText}>
+                No available shuttles at the moment
+              </Text>
             </View>
-            ) : (
-            buses.map(bus => (
-                <BusCard
+          ) : (
+            buses.map((bus) => (
+              <BusCard
                 key={bus.id}
                 bus={bus}
                 selected={bus.id === selectedBusId}
                 onPress={() => setSelectedBusId(bus.id)}
-                />
+              />
             ))
-            )}
+          )}
         </ScrollView>
 
         <Pressable
-          style={[
-            styles.proceedButton,
-            !selectedBusId && styles.disabled,
-          ]}
+          style={[styles.proceedButton, !selectedBusId && styles.disabled]}
           onPress={handleChangeBus}
           disabled={!selectedBusId || loading || fetching}
         >
@@ -173,14 +171,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loadingContainer: {
-  marginTop: 60,
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-},
-loadingText: {
-  fontFamily: "Roboto_500Medium",
-  fontSize: 14,
-  color: "#A1A4B2",
-},
+    marginTop: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  loadingText: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 14,
+    color: "#A1A4B2",
+  },
 });

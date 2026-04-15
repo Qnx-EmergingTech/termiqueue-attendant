@@ -154,7 +154,7 @@ export default function Scan() {
         <View style={styles.info}>
           <Text style={styles.vehicle}>Vehicle Info</Text>
           <Text style={styles.details}>
-            Bus Plate Number: {myBus?.plate_number || "—"}
+            Shuttle Plate Number: {myBus?.plate_number || "—"}
           </Text>
           <Text style={styles.details}>
             Last passenger scanned:{" "}
@@ -190,7 +190,7 @@ export default function Scan() {
             disabled={!canAddPassenger}
             onPress={() => {
               if (!myBus?.id) {
-                Alert.alert("Error", "Bus not loaded yet");
+                Alert.alert("Error", "Shuttle not loaded yet");
                 return;
               }
 
