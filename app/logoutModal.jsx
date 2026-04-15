@@ -33,7 +33,7 @@ export default function LogoutModal({ visible, onClose }) {
         title="Are you sure you want to logout?"
         confirmText="Confirm"
         cancelText="Cancel"
-        primaryColor="#096B72"
+        primaryColor="#020eba"
       />
     </>
   );

@@ -4,10 +4,7 @@ export default function BusCard({ bus, selected, onPress }) {
   return (
     <Pressable
       onPress={onPress}
-      style={[
-        styles.card,
-        selected && styles.selectedCard,
-      ]}
+      style={[styles.card, selected && styles.selectedCard]}
     >
       <Text style={styles.busName}>{bus.bus_name}</Text>
 
@@ -41,7 +38,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   selectedCard: {
-    borderColor: "#096B72",
+    borderColor: "#020eba",
   },
   busName: {
     fontFamily: "Roboto_700Bold",
@@ -60,7 +57,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: "Roboto_500Medium",
     fontSize: 12,
-    color: "#096B72",
+    color: "#020eba",
     marginRight: 5,
   },
   value: {

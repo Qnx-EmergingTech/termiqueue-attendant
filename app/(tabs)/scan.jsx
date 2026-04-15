@@ -123,7 +123,7 @@ export default function Scan() {
           <Ionicons
             name="bus-outline"
             size={170}
-            color="#096B72"
+            color="#020eba"
             style={styles.icon}
           />
           <View style={{ flex: 1 }}>
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   activeButton: {
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     flexDirection: "row",
     justifyContent: "center",
     paddingVertical: 16,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   bus: {
     fontFamily: "Roboto_700Bold",
     fontSize: 20,
-    color: "#096B72",
+    color: "#020eba",
     marginBottom: 5,
   },
   details: {

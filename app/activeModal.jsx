@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { Stack, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   Image,
   Modal,
@@ -8,10 +8,9 @@ import {
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 import { setTripState } from "../utils/authStorage";
-
 
 export default function activeModal() {
   const router = useRouter();
@@ -19,7 +18,7 @@ export default function activeModal() {
 
   const closeAndGoHome = () => {
     setVisible(false);
-    router.replace('/(tabs)/home');    
+    router.replace("/(tabs)/home");
   };
 
   const handleConfirm = async () => {
@@ -28,44 +27,46 @@ export default function activeModal() {
     router.replace("/(tabs)/home");
   };
 
-
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={closeAndGoHome}
-    >
-      <TouchableWithoutFeedback onPress={closeAndGoHome}>
-        <View style={styles.backdrop}>
-          <TouchableWithoutFeedback>
-            <View style={styles.modalBox}>
-              <Pressable style={styles.closeIcon} onPress={closeAndGoHome}>
-                <Ionicons name="close" size={24} color="#333" />
-              </Pressable>
-              <Image
-                source={require('../assets/images/success.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.title}>Are you sure you want to set your status to active?</Text>
-              <Text style={styles.text}>
-                Setting your status to active will let people on queue know that you are on your way to the terminal
-              </Text>
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeAndGoHome}
+      >
+        <TouchableWithoutFeedback onPress={closeAndGoHome}>
+          <View style={styles.backdrop}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalBox}>
+                <Pressable style={styles.closeIcon} onPress={closeAndGoHome}>
+                  <Ionicons name="close" size={24} color="#333" />
+                </Pressable>
+                <Image
+                  source={require("../assets/images/success.png")}
+                  style={styles.icon}
+                />
+                <Text style={styles.title}>
+                  Are you sure you want to set your status to active?
+                </Text>
+                <Text style={styles.text}>
+                  Setting your status to active will let people on queue know
+                  that you are on your way to the terminal
+                </Text>
 
-              <Pressable style={styles.button} onPress={handleConfirm}>
-                <Text style={styles.cbutton}>Confirm</Text>
-              </Pressable>
+                <Pressable style={styles.button} onPress={handleConfirm}>
+                  <Text style={styles.cbutton}>Confirm</Text>
+                </Pressable>
 
-              <Pressable style={styles.cancelButton} onPress={handleConfirm}>
-                <Text style={styles.cancel}>Cancel</Text>
-              </Pressable>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+                <Pressable style={styles.cancelButton} onPress={handleConfirm}>
+                  <Text style={styles.cancel}>Cancel</Text>
+                </Pressable>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </>
   );
 }
@@ -73,20 +74,20 @@ export default function activeModal() {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: '#00000033',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#00000033",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalBox: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: "80%",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
-    alignItems: 'left',
+    alignItems: "left",
     gap: 12,
   },
   closeIcon: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     right: 10,
     padding: 5,
@@ -100,33 +101,33 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto_400Regular",
     fontSize: 14,
   },
-  cbutton:{
+  cbutton: {
     fontFamily: "Roboto_500Medium",
     color: "white",
   },
-  cancel:{
+  cancel: {
     fontFamily: "Roboto_500Medium",
-    color: "#096B72",
+    color: "#020eba",
   },
   button: {
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   cancelButton: {
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 5,
-    borderColor: "#096B72",
-    borderWidth: 1, 
+    borderColor: "#020eba",
+    borderWidth: 1,
   },
   icon: {
     width: 48,
     height: 48,
-  }
+  },
 });

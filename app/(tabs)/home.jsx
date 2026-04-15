@@ -165,7 +165,7 @@ export default function Home() {
                 <Ionicons
                   name="swap-horizontal-outline"
                   size={24}
-                  color="#096B72"
+                  color="#020eba"
                 />
               )}
               titleStyle={{
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   activeButton: {
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     flexDirection: "row",
     justifyContent: "center",
     paddingVertical: 16,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   bus: {
     fontFamily: "Roboto_700Bold",
     fontSize: 20,
-    color: "#096B72",
+    color: "#020eba",
   },
   destination: {
     fontFamily: "Roboto_500Medium",
