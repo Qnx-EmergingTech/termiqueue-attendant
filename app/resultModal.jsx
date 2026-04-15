@@ -21,9 +21,7 @@ export default function ResultModal() {
           return;
         }
 
-        const boarded = result.passengers.filter(
-          p => p.status === "boarded"
-        );
+        const boarded = result.passengers.filter((p) => p.status === "boarded");
 
         setSeatTaken(boarded.length);
         setCapacity(result.capacity);
@@ -55,7 +53,7 @@ export default function ResultModal() {
       title="Passenger Added"
       message={`Seat Available: ${capacity - seatTaken}\nSeat Taken: ${seatTaken}\nTotal Seats: ${capacity}`}
       confirmText="Confirm"
-      primaryColor="#096B72"
+      primaryColor="#020eba"
     />
   );
 }

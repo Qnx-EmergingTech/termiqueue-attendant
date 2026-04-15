@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { departBus, getAttendantPassengers } from "../api/buses";
@@ -27,7 +27,7 @@ export default function StartModal() {
         }
 
         setCapacity(result.capacity);
-        const boarded = result.passengers.filter(p => p.status === "boarded");
+        const boarded = result.passengers.filter((p) => p.status === "boarded");
         setSeatTaken(boarded.length);
       } catch (err) {
         Alert.alert("Error", "Something went wrong");
@@ -64,7 +64,7 @@ export default function StartModal() {
     router.replace("/(tabs)/home");
   };
 
-  if (fetchingSeats) return null; 
+  if (fetchingSeats) return null;
 
   return (
     <CustomizableModal
@@ -77,8 +77,8 @@ export default function StartModal() {
       message={`Capacity is at ${seatTaken}/${capacity}\nDrive Safe!`}
       confirmText={loading ? "Starting..." : "Confirm"}
       cancelText="Cancel"
-      icon={require('../assets/images/success.png')}
-      primaryColor="#096B72"
+      icon={require("../assets/images/success.png")}
+      primaryColor="#020eba"
     />
   );
 }

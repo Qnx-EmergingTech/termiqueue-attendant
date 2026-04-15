@@ -135,10 +135,10 @@ const styles = StyleSheet.create({
   },
   cancel: {
     fontFamily: "Roboto_500Medium",
-    color: "#096B72",
+    color: "#020eba",
   },
   button: {
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: "center",
     marginTop: 5,
-    borderColor: "#096B72",
+    borderColor: "#020eba",
     borderWidth: 1,
   },
   icon: {

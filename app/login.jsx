@@ -62,6 +62,12 @@ export default function Login() {
             source={require("../assets/images/Blob.png")}
             style={styles.image}
           />
+
+          <Image
+            source={require("../assets/images/Qnext-logo.png")}
+            style={styles.headingLogo}
+            resizeMode="contain"
+          />
           <Text style={styles.heading}>Welcome Back!</Text>
 
           <View style={styles.mid}>
@@ -143,9 +149,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 30,
   },
+  headingLogo: {
+    marginTop: 50,
+    alignSelf: "center",
+    width: 140,
+    height: 50,
+  },
   mid: {
     flex: 1,
-    marginTop: 60,
+    marginTop: 20,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -167,7 +179,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     borderRadius: 38,
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -200,7 +212,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   signUp: {
-    color: "#096B72",
+    color: "#020eba",
     fontFamily: "Roboto_500Medium",
     fontSize: 14,
   },

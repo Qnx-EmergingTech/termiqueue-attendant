@@ -112,7 +112,7 @@ export default function Signup() {
               <Checkbox
                 value={accepted}
                 onValueChange={setAccepted}
-                tintColors={{ true: "#096B72", false: "#ccc" }}
+                color={accepted ? "#020EBA" : undefined}
                 style={styles.box}
               />
             </View>

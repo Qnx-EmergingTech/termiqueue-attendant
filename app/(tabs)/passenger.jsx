@@ -307,14 +307,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tabActive: {
-    borderBottomColor: "#096B72",
+    borderBottomColor: "#020eba",
   },
   tabText: {
     fontSize: 16,
     color: "#666",
   },
   tabTextActive: {
-    color: "#096B72",
+    color: "#020eba",
     fontWeight: "600",
   },
 
@@ -330,9 +330,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     borderWidth: 2,
-    borderColor: "#096B72",
+    borderColor: "#020eba",
     marginRight: 15,
     alignItems: "center",
     justifyContent: "center",
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 50,
     borderWidth: 3,
-    borderColor: "#096B72",
+    borderColor: "#020eba",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     left: 12,
     fontSize: 24,
     fontWeight: "700",
-    color: "#096B72",
+    color: "#020eba",
   },
 
   counterBottom: {
@@ -390,14 +390,14 @@ const styles = StyleSheet.create({
     right: 12,
     fontSize: 24,
     fontWeight: "700",
-    color: "#096B72",
+    color: "#020eba",
   },
 
   diagonalLine: {
     position: "absolute",
     width: 3,
     height: 50,
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     transform: [{ rotate: "45deg" }],
   },
   emptyContainer: {

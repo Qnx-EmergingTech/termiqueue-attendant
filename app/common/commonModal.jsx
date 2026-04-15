@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { Ionicons } from "@expo/vector-icons";
+import { Stack } from "expo-router";
 import {
   ActivityIndicator,
   Image,
@@ -8,36 +8,35 @@ import {
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 
 export default function CustomizableModal({
   visible = true,
   onClose,
-  icon = require('../../assets/images/success.png'),
+  icon = require("../../assets/images/success.png"),
   title = "",
   message = "",
   confirmText = "Confirm",
   cancelText = "Cancel",
   onConfirm,
   onCancel,
-  primaryColor = "#096B72",
+  primaryColor = "#020eba",
   showCancel = true,
   loading = false,
   cancelLoading = false,
 }) {
-
-        const renderMessage = (msg) => {
+  const renderMessage = (msg) => {
     if (!msg && msg !== "") return null;
     // normalize both real newlines and literal "\n" sequences
     const normalized = String(msg).replace(/\\n/g, "\n");
     return normalized.split(/\r?\n/).map((line, i) => (
-        <Text key={i} style={styles.text}>
+      <Text key={i} style={styles.text}>
         {line}
         {i < normalized.split(/\r?\n/).length - 1 ? "\n" : null}
-        </Text>
+      </Text>
     ));
-    };
+  };
 
   return (
     <>
@@ -53,7 +52,6 @@ export default function CustomizableModal({
           <View style={styles.backdrop}>
             <TouchableWithoutFeedback>
               <View style={styles.modalBox}>
-                
                 <Pressable style={styles.closeIcon} onPress={onClose}>
                   <Ionicons name="close" size={24} color="#333" />
                 </Pressable>
@@ -63,16 +61,19 @@ export default function CustomizableModal({
                 <Text style={styles.title}>{title}</Text>
 
                 {message ? (
-                    <View style={{ alignSelf: "stretch" }}>
-                        {renderMessage(message)}
-                    </View>
-                    ) : null}
+                  <View style={{ alignSelf: "stretch" }}>
+                    {renderMessage(message)}
+                  </View>
+                ) : null}
 
                 <Pressable
-                  style={[styles.button, { backgroundColor: primaryColor }, loading && { opacity: 0.7 }]}
+                  style={[
+                    styles.button,
+                    { backgroundColor: primaryColor },
+                    loading && { opacity: 0.7 },
+                  ]}
                   onPress={onConfirm}
                   disabled={loading || cancelLoading}
-
                 >
                   {loading ? (
                     <ActivityIndicator color="#fff" />
@@ -90,18 +91,18 @@ export default function CustomizableModal({
                     ]}
                     onPress={onCancel}
                     disabled={loading || cancelLoading}
-
                   >
                     {cancelLoading ? (
                       <ActivityIndicator color={primaryColor} />
                     ) : (
-                      <Text style={[styles.cancelText, { color: primaryColor }]}>
+                      <Text
+                        style={[styles.cancelText, { color: primaryColor }]}
+                      >
                         {cancelText}
                       </Text>
                     )}
                   </Pressable>
                 )}
-
               </View>
             </TouchableWithoutFeedback>
           </View>
@@ -114,20 +115,20 @@ export default function CustomizableModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: '#00000033',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#00000033",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalBox: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: "80%",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
-    alignItems: 'left',
+    alignItems: "left",
     gap: 12,
   },
   closeIcon: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     right: 10,
     padding: 5,
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 5,
   },
   cbutton: {
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   cancelText: {
     fontFamily: "Inter_600SemiBold",
@@ -170,5 +171,5 @@ const styles = StyleSheet.create({
   icon: {
     width: 48,
     height: 48,
-  }
+  },
 });

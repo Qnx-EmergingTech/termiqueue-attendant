@@ -90,7 +90,7 @@ export default function WalkInModal() {
       confirmText="Regular"
       cancelText="Elderly/PWD"
       icon={require("../assets/images/success.png")}
-      primaryColor="#096B72"
+      primaryColor="#020eba"
     />
   );
 }

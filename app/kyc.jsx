@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   proceedButton: {
     borderRadius: 38,
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   signUp: {
-    color: "#096B72",
+    color: "#020eba",
     fontFamily: "Roboto_500Medium",
     fontSize: 14,
   },
