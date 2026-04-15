@@ -135,6 +135,27 @@ export default function Home() {
               onPress={() => {
                 closeMenu();
                 router.push({
+                  pathname: "/tripHistory",
+                });
+              }}
+              title="Trip History"
+              leadingIcon={() => (
+                <Ionicons name="time-outline" size={24} color="#020eba" />
+              )}
+              titleStyle={{
+                fontFamily: "Roboto_500Medium",
+                fontSize: 16,
+                color: "#333",
+              }}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+              }}
+            />
+            <Menu.Item
+              onPress={() => {
+                closeMenu();
+                router.push({
                   pathname: "/re-route",
                   params: { currentBusId: myBus?.id },
                 });
