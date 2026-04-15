@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   Image,
   Modal,
@@ -8,10 +8,10 @@ import {
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 import { arriveBus } from "../api/buses";
-import { setTripState } from "../utils/authStorage";
+import { setQueueId, setTripState } from "../utils/authStorage";
 
 export default function arrivedModal() {
   const router = useRouter();
@@ -21,71 +21,80 @@ export default function arrivedModal() {
 
   const closeAndGoHome = () => {
     setVisible(false);
-    router.replace('/(tabs)/home');    
+    router.replace("/(tabs)/home");
   };
 
-    const handleConfirm = async () => {
-      if (loading) return;
+  const handleConfirm = async () => {
+    if (loading) return;
 
-      try {
-        setLoading(true);
-        await arriveBus(busId);
+    try {
+      setLoading(true);
 
-        await setTripState("arrived", "Start Your Trip");
-        router.replace("/(tabs)/home");
+      const result = await arriveBus(busId);
 
-      } catch (err) {
-        console.error("Arrive bus error:", err);
-        alert("Something went wrong. Please try again.");
-      } finally {
-        setLoading(false);
+      if (!result.success) {
+        throw new Error(result.message);
       }
-    };
+
+      if (!result.queueId) {
+        throw new Error("Queue ID not returned by server");
+      }
+
+      await setQueueId(result.queueId);
+      await setTripState("arrived", "Start Your Trip");
+
+      router.replace("/(tabs)/home");
+    } catch (err) {
+      console.error("Arrive bus failed:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={closeAndGoHome}
-    >
-      <TouchableWithoutFeedback onPress={closeAndGoHome}>
-        <View style={styles.backdrop}>
-          <TouchableWithoutFeedback>
-            <View style={styles.modalBox}>
-              <Pressable style={styles.closeIcon} onPress={closeAndGoHome}>
-                <Ionicons name="close" size={24} color="#333" />
-              </Pressable>
-              <Image
-                source={require('../assets/images/success.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.title}>Want to set your status to "has Arrived"?</Text>
-              <Text style={styles.text}>
-                Setting your status to “has arrive” will let people on queue know that you are already and waiting for them to board
-              </Text>
-            <Pressable
-              style={[
-                styles.button,
-                loading && { opacity: 0.6 },
-              ]}
-              onPress={handleConfirm}
-              disabled={loading}
-            >
-              <Text style={styles.cbutton}>
-                {loading ? "Updating..." : "Confirm"}
-              </Text>
-            </Pressable>
-              <Pressable style={styles.cancelButton} onPress={closeAndGoHome}>
-                <Text style={styles.cancel}>Cancel</Text>
-              </Pressable>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeAndGoHome}
+      >
+        <TouchableWithoutFeedback onPress={closeAndGoHome}>
+          <View style={styles.backdrop}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalBox}>
+                <Pressable style={styles.closeIcon} onPress={closeAndGoHome}>
+                  <Ionicons name="close" size={24} color="#333" />
+                </Pressable>
+                <Image
+                  source={require("../assets/images/success.png")}
+                  style={styles.icon}
+                />
+                <Text style={styles.title}>
+                  Want to set your status to "has Arrived"?
+                </Text>
+                <Text style={styles.text}>
+                  Setting your status to “has arrived” will let people on queue
+                  know that you are already and waiting for them to board
+                </Text>
+                <Pressable
+                  style={[styles.button, loading && { opacity: 0.6 }]}
+                  onPress={handleConfirm}
+                  disabled={loading}
+                >
+                  <Text style={styles.cbutton}>
+                    {loading ? "Updating..." : "Confirm"}
+                  </Text>
+                </Pressable>
+                <Pressable style={styles.cancelButton} onPress={closeAndGoHome}>
+                  <Text style={styles.cancel}>Cancel</Text>
+                </Pressable>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </>
   );
 }
@@ -93,20 +102,20 @@ export default function arrivedModal() {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: '#00000033',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#00000033",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalBox: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: "80%",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
-    alignItems: 'left',
+    alignItems: "left",
     gap: 12,
   },
   closeIcon: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     right: 10,
     padding: 5,
@@ -120,11 +129,11 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto_400Regular",
     fontSize: 14,
   },
-  cbutton:{
+  cbutton: {
     fontFamily: "Roboto_500Medium",
     color: "white",
   },
-  cancel:{
+  cancel: {
     fontFamily: "Roboto_500Medium",
     color: "#096B72",
   },
@@ -133,20 +142,20 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   cancelButton: {
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 5,
     borderColor: "#096B72",
-    borderWidth: 1, 
+    borderWidth: 1,
   },
   icon: {
     width: 48,
     height: 48,
-  }
+  },
 });
