@@ -3,11 +3,10 @@ import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
-import MapView, { Marker } from 'react-native-maps';
-import { Menu, Provider as PaperProvider } from 'react-native-paper';
+import MapView, { Marker } from "react-native-maps";
+import { Menu, Provider as PaperProvider } from "react-native-paper";
 import { getMyBus } from "../../api/buses";
 import LogoutModal from "../logoutModal";
-
 
 export default function Home() {
   const router = useRouter();
@@ -18,52 +17,51 @@ export default function Home() {
   const [isFetchingBus, setIsFetchingBus] = useState(true);
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
-  const toggleMenu = () => setMenuVisible(prev => !prev);
+  const toggleMenu = () => setMenuVisible((prev) => !prev);
   const [tripStatus, setTripStatus] = useState("idle");
-  const [actionButtonLabel, setActionButtonLabel] = useState("Set Active Status");
+  const [actionButtonLabel, setActionButtonLabel] =
+    useState("Set Active Status");
   const isButtonDisabled = isFetchingBus;
-
 
   const handleLogout = () => {
     closeMenu();
-    setLogoutVisible(true); 
+    setLogoutVisible(true);
   };
 
   const mapBusStatusToTripStatus = (busStatus) => {
-  switch (busStatus) {
-    case "available":
-      return "idle";
-    case "active":
-      return "active";
-    case "arrived":
-      return "arrived";
-    case "in_transit":
-      return "ongoing";
-    default:
-      return "idle";
-  }
-};
-
-const fetchMyBus = async () => {
-  setIsFetchingBus(true);
-  try {
-    const result = await getMyBus();
-    if (result.success && result.bus) {
-      setMyBus(result.bus);
-
-      const derivedStatus = mapBusStatusToTripStatus(result.bus.status);
-      setTripStatus(derivedStatus);
-      setActionButtonLabel("");
-    } else {
-      console.log("No assigned bus or failed to fetch.");
+    switch (busStatus) {
+      case "available":
+        return "idle";
+      case "active":
+        return "active";
+      case "arrived":
+        return "arrived";
+      case "in_transit":
+        return "ongoing";
+      default:
+        return "idle";
     }
-  } catch (err) {
-    console.error("Error fetching my bus:", err);
-  } finally {
-    setIsFetchingBus(false);
-  }
-};
+  };
 
+  const fetchMyBus = async () => {
+    setIsFetchingBus(true);
+    try {
+      const result = await getMyBus();
+      if (result.success && result.bus) {
+        setMyBus(result.bus);
+
+        const derivedStatus = mapBusStatusToTripStatus(result.bus.status);
+        setTripStatus(derivedStatus);
+        setActionButtonLabel("");
+      } else {
+        console.log("No assigned bus or failed to fetch.");
+      }
+    } catch (err) {
+      console.error("Error fetching my bus:", err);
+    } finally {
+      setIsFetchingBus(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -81,7 +79,7 @@ const fetchMyBus = async () => {
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           });
-        }
+        },
       );
       await fetchMyBus();
     })();
@@ -91,24 +89,32 @@ const fetchMyBus = async () => {
     if (!actionButtonLabel) {
       if (tripStatus === "idle") setActionButtonLabel("Set Active Status");
       else if (tripStatus === "active") setActionButtonLabel("Update Status");
-      else if (tripStatus === "arrived") setActionButtonLabel("Start Your Trip");
+      else if (tripStatus === "arrived")
+        setActionButtonLabel("Start Your Trip");
       else if (tripStatus === "ongoing") setActionButtonLabel("Finish Trip");
     }
   }, [tripStatus]);
 
   return (
-  <PaperProvider>
+    <PaperProvider>
       <LogoutModal
         visible={logoutVisible}
         onClose={() => setLogoutVisible(false)}
       />
 
-    <View style={styles.container}>
-      <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end', marginBottom: 10 }}>
+      <View style={styles.container}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-end",
+            justifyContent: "flex-end",
+            marginBottom: 10,
+          }}
+        >
           <View style={{ flex: 1 }}>
-          <Text style={styles.greeting}>
-            Hello{myBus?.attendant_name ? `, ${myBus.attendant_name}!` : "!"}
-          </Text>
+            <Text style={styles.greeting}>
+              Hello{myBus?.attendant_name ? `, ${myBus.attendant_name}!` : "!"}
+            </Text>
             <Text style={styles.title}>Ready for your next trip?</Text>
           </View>
 
@@ -116,56 +122,61 @@ const fetchMyBus = async () => {
             visible={menuVisible}
             onDismiss={closeMenu}
             contentStyle={{
-            backgroundColor: "white",
-            borderRadius: 5,
+              backgroundColor: "white",
+              borderRadius: 5,
             }}
             anchor={
               <Pressable onPress={toggleMenu} style={{ padding: 10 }}>
                 <Ionicons name="ellipsis-vertical" size={24} color="#A1A4B2" />
               </Pressable>
             }
-          ><Menu.Item
-            onPress={() => {
-              closeMenu();
-              router.push({
-                pathname: "/re-route",
-                params: { currentBusId: myBus?.id },
-              });
-            }}
-            title="Change Bus"
-            leadingIcon={() => (
-              <Ionicons name="swap-horizontal-outline" size={24} color="#096B72" />
-            )}
-            titleStyle={{
-              fontFamily: "Roboto_500Medium",
-              fontSize: 16,
-              color: "#333",
-            }}
-            style={{
-              paddingVertical: 10,
-              paddingHorizontal: 10,
-            }}
-          />
+          >
             <Menu.Item
-            onPress={handleLogout}
-            title="Logout"
-            leadingIcon={() => (
-              <Ionicons name="log-out-outline" size={24} color="#DB5461" />
-            )}
-            titleStyle={{
-              fontFamily: "Roboto_500Medium",
-              fontSize: 16,
-              color: "#333",
-            }}
-            style={{
-              paddingVertical: 10,
-              paddingHorizontal: 10,
-            }}
-          />
+              onPress={() => {
+                closeMenu();
+                router.push({
+                  pathname: "/re-route",
+                  params: { currentBusId: myBus?.id },
+                });
+              }}
+              title="Change Shuttle"
+              leadingIcon={() => (
+                <Ionicons
+                  name="swap-horizontal-outline"
+                  size={24}
+                  color="#096B72"
+                />
+              )}
+              titleStyle={{
+                fontFamily: "Roboto_500Medium",
+                fontSize: 16,
+                color: "#333",
+              }}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+              }}
+            />
+            <Menu.Item
+              onPress={handleLogout}
+              title="Logout"
+              leadingIcon={() => (
+                <Ionicons name="log-out-outline" size={24} color="#DB5461" />
+              )}
+              titleStyle={{
+                fontFamily: "Roboto_500Medium",
+                fontSize: 16,
+                color: "#333",
+              }}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+              }}
+            />
           </Menu>
         </View>
-      
-      {region && (
+
+        {region && (
           <MapView
             style={styles.map}
             region={region}
@@ -175,124 +186,118 @@ const fetchMyBus = async () => {
             <Marker coordinate={region} title="You are here" />
           </MapView>
         )}
-        
-      <View style={styles.info}>
-        {myBus ? (
-          <>
-            <Text style={styles.bus}>
-              {myBus.bus_name}, {myBus.bus_number}
-            </Text>
-            <Text style={styles.destination}>
-              {myBus.origin}
-            </Text>
-            <Text style={styles.destination}>
-              Destination: {myBus.destination}
-            </Text>
-          </>
-        ) : (
-          <Text style={styles.destination}>Loading bus info...</Text>
-        )}
-      </View>
+
+        <View style={styles.info}>
+          {myBus ? (
+            <>
+              <Text style={styles.bus}>
+                {myBus.bus_name}, {myBus.bus_number}
+              </Text>
+              <Text style={styles.destination}>{myBus.origin}</Text>
+              <Text style={styles.destination}>
+                Destination: {myBus.destination}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.destination}>Loading bus info...</Text>
+          )}
+        </View>
 
         <View style={styles.box}>
-            <Text style={styles.status}>
-              {tripStatus === "idle" ? "Waiting for you to arrive" :
-              tripStatus === "active" ? "You are now active, and on your way!" :
-              tripStatus === "arrived" ? "Ready to start your trip" :
-              tripStatus === "ongoing" ? "On Going" :
-              "Waiting for you to arrive"}
-            </Text>
-
+          <Text style={styles.status}>
+            {tripStatus === "idle"
+              ? "Waiting for you to arrive"
+              : tripStatus === "active"
+                ? "You are now active, and on your way!"
+                : tripStatus === "arrived"
+                  ? "Ready to start your trip"
+                  : tripStatus === "ongoing"
+                    ? "On Going"
+                    : "Waiting for you to arrive"}
+          </Text>
 
           <Text style={styles.time}>
-            Keep an eye on your route and schedule. 
+            Keep an eye on your route and schedule.
           </Text>
         </View>
 
-      <View>
-        <Pressable 
+        <View>
+          <Pressable
             disabled={isButtonDisabled}
-            style={[
-              styles.activeButton,
-              isButtonDisabled && { opacity: 0.5 },
-            ]}
-          onPress={() => {
-            if (actionButtonLabel === "Set Active Status") {
-              router.push("/activeModal");   
-            } 
-            else if (actionButtonLabel === "Update Status") {
-              router.push({
-                pathname: "/arrivedModal",
-                params: { busId: myBus.id },
-              });
-            }
-            else if (actionButtonLabel === "Start Your Trip") {
-              router.push({
-                pathname: "/startModal",
-                params: { busId: myBus.id },
-              });
-            } 
-            else if (actionButtonLabel === "Finish Trip") {
-              router.push({
-                pathname: "/finishModal",
-                params: { busId: myBus.id },
-              }); 
-            }
-          }}
-        >
-          <Text style={styles.active}>{actionButtonLabel}</Text>
-        </Pressable>
+            style={[styles.activeButton, isButtonDisabled && { opacity: 0.5 }]}
+            onPress={() => {
+              if (actionButtonLabel === "Set Active Status") {
+                router.push("/activeModal");
+              } else if (actionButtonLabel === "Update Status") {
+                router.push({
+                  pathname: "/arrivedModal",
+                  params: { busId: myBus.id },
+                });
+              } else if (actionButtonLabel === "Start Your Trip") {
+                router.push({
+                  pathname: "/startModal",
+                  params: { busId: myBus.id },
+                });
+              } else if (actionButtonLabel === "Finish Trip") {
+                router.push({
+                  pathname: "/finishModal",
+                  params: { busId: myBus.id },
+                });
+              }
+            }}
+          >
+            <Text style={styles.active}>{actionButtonLabel}</Text>
+          </Pressable>
+        </View>
       </View>
-
-    </View>
-  </PaperProvider>
+    </PaperProvider>
   );
 }
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "white",
-        padding: 20,
-    },
-    greeting: {
-        fontFamily: "Roboto_700Bold",
-        fontSize: 20,
-    },
-    title: {
-        fontFamily: "Roboto_400Regular",
-        fontSize: 20,
-        color: "#A1A4B2",
-    },
-    btitle: {
-        fontFamily: "Roboto_700Bold",
-        fontSize: 18,
-        color: "white",
-        marginBottom: 5
-    },
-    stitle: {
-        fontFamily: "Roboto_500Medium",
-        fontSize: 11,
-        color: "white",
-    },
-    out: {
-        fontFamily: "Roboto_700Bold",
-        fontSize: 20,
-        color: "#DB5461",
-    },
-    outtext: {
-        fontFamily: "Roboto_400Regular",
-        fontSize: 16,
-    },
-    map: {
-    width: Dimensions.get('window').width * 0.9,
-    height: Dimensions.get('window').height * 0.38,
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 20,
+  },
+  greeting: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 20,
+  },
+  title: {
+    fontFamily: "Roboto_400Regular",
+    fontSize: 20,
+    color: "#A1A4B2",
+  },
+  btitle: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 18,
+    color: "white",
+    marginBottom: 5,
+  },
+  stitle: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 11,
+    color: "white",
+  },
+  out: {
+    fontFamily: "Roboto_700Bold",
+    fontSize: 20,
+    color: "#DB5461",
+  },
+  outtext: {
+    fontFamily: "Roboto_400Regular",
+    fontSize: 16,
+  },
+  map: {
+    width: Dimensions.get("window").width * 0.9,
+    height: Dimensions.get("window").height * 0.38,
     borderRadius: 12,
     marginTop: 30,
     marginBottom: 20,
-    },
-    activeButton: {
+  },
+  activeButton: {
     backgroundColor: "#096B72",
     flexDirection: "row",
     justifyContent: "center",
@@ -309,35 +314,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "white",
   },
-   box: {
-    backgroundColor: "#D5D5D5",   
-    borderRadius: 8,         
+  box: {
+    backgroundColor: "#D5D5D5",
+    borderRadius: 8,
     paddingVertical: 16,
-    paddingHorizontal: 24,             
+    paddingHorizontal: 24,
     marginTop: 30,
-    gap: 4,          
+    gap: 4,
   },
-   status: {
+  status: {
     fontFamily: "Roboto_700Bold",
     fontSize: 18,
     color: "#3F414E",
-   },
-   time: {
+  },
+  time: {
     fontFamily: "Roboto_500Medium",
     fontSize: 11,
     color: "#3F414E",
-   },
-   info: {
+  },
+  info: {
     gap: 6,
-   },
-   bus: {
+  },
+  bus: {
     fontFamily: "Roboto_700Bold",
     fontSize: 20,
     color: "#096B72",
-   },
-   destination: {
+  },
+  destination: {
     fontFamily: "Roboto_500Medium",
     fontSize: 16,
     color: "black",
-   }
+  },
 });

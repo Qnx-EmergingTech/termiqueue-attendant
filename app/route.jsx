@@ -14,7 +14,6 @@ import {
 import { claimBus, getAllBuses } from "../api/buses";
 import BusCard from "../app/common/busCard";
 
-
 export default function Route() {
   const router = useRouter();
   const [buses, setBuses] = useState([]);
@@ -22,13 +21,12 @@ export default function Route() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
-
   useEffect(() => {
     const fetchBuses = async () => {
       setFetching(true);
       const res = await getAllBuses();
       if (res.success) {
-        setBuses(res.buses.filter(bus => bus.status === "available"));
+        setBuses(res.buses.filter((bus) => bus.status === "available"));
       }
       setFetching(false);
     };
@@ -69,7 +67,7 @@ export default function Route() {
           style={styles.image}
         />
 
-        <Text style={styles.heading}>Claim a Bus</Text>
+        <Text style={styles.heading}>Claim a Vehicle</Text>
 
         <ScrollView
           style={styles.scrollArea}
@@ -79,14 +77,18 @@ export default function Route() {
           {fetching ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#096B72" />
-              <Text style={styles.loadingText}>Loading available buses...</Text>
+              <Text style={styles.loadingText}>
+                Loading available vehicle...
+              </Text>
             </View>
           ) : buses.length === 0 ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>No available buses at the moment</Text>
+              <Text style={styles.loadingText}>
+                No available vehicle at the moment
+              </Text>
             </View>
           ) : (
-            buses.map(bus => (
+            buses.map((bus) => (
               <BusCard
                 key={bus.id}
                 bus={bus}
@@ -98,15 +100,12 @@ export default function Route() {
         </ScrollView>
 
         <Pressable
-          style={[
-            styles.proceedButton,
-            !selectedBusId && styles.disabled,
-          ]}
+          style={[styles.proceedButton, !selectedBusId && styles.disabled]}
           onPress={handleClaim}
           disabled={!selectedBusId || loading || fetching}
         >
           <Text style={styles.proceed}>
-            {loading ? "CLAIMING..." : "CLAIM BUS"}
+            {loading ? "CLAIMING..." : "CLAIM VEHICLE"}
           </Text>
         </Pressable>
       </View>
@@ -131,7 +130,7 @@ const styles = StyleSheet.create({
 
   heading: {
     position: "absolute",
-    top: screenHeight * .1,
+    top: screenHeight * 0.1,
     width: "100%",
     textAlign: "center",
     fontFamily: "Roboto_700Bold",
@@ -144,7 +143,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingBottom: 120, 
+    paddingBottom: 120,
   },
 
   proceedButton: {
@@ -168,7 +167,7 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto_500Medium",
     fontSize: 14,
   },
-    loadingContainer: {
+  loadingContainer: {
     marginTop: 60,
     alignItems: "center",
     justifyContent: "center",
@@ -180,5 +179,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#A1A4B2",
   },
-
 });

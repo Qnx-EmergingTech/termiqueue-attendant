@@ -8,6 +8,8 @@ import { auth } from "../firebaseConfig";
 import { clearTripState, logoutUser, setToken } from "../utils/authStorage";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const joinUrl = (base, path) =>
+  `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 
 export const signUp = async (email, password, username) => {
   try {
@@ -21,7 +23,10 @@ export const signUp = async (email, password, username) => {
     const idToken = await getIdToken(user);
     await setToken(idToken);
 
-    const res = await fetch(`${API_BASE_URL}/profiles/signup`, {
+    const url = joinUrl(API_BASE_URL, "/profiles/signup");
+    console.log("Signup URL:", url);
+
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +77,9 @@ export const logInWithUsername = async (identifier, password) => {
     let email = trimmed;
 
     if (!isEmail) {
-      const res = await fetch(`${API_BASE_URL}/profiles/login`, {
+      const url = joinUrl(API_BASE_URL, "/profiles/login");
+
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
