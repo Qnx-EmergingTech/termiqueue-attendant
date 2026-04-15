@@ -5,7 +5,7 @@ import CustomizableModal from "../app/common/commonModal";
 
 export default function ScanModal() {
   const router = useRouter();
-  const { busId } = useLocalSearchParams(); 
+  const { busId } = useLocalSearchParams();
   const [visible, setVisible] = useState(true);
 
   if (!busId) {
@@ -42,8 +42,7 @@ export default function ScanModal() {
       confirmText="Confirm"
       cancelText="Cancel"
       icon={require("../assets/images/success.png")}
-      primaryColor="#096B72"
+      primaryColor="#020eba"
     />
   );
 }
- 

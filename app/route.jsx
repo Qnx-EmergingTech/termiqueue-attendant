@@ -76,7 +76,7 @@ export default function Route() {
         >
           {fetching ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#096B72" />
+              <ActivityIndicator size="large" color="#020eba" />
               <Text style={styles.loadingText}>
                 Loading available vehicle...
               </Text>
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     borderRadius: 38,
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     justifyContent: "center",
     paddingVertical: 14,
     alignItems: "center",

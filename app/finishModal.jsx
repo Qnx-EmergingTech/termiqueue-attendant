@@ -46,7 +46,7 @@ export default function finishModal() {
       cancelText="Cancel"
       title="Want to finish your trip?"
       icon={require("../assets/images/success.png")}
-      primaryColor="#096B72"
+      primaryColor="#020eba"
       disabled={loading}
     />
   );

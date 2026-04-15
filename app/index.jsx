@@ -1,13 +1,13 @@
 import { Link, Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 export default function Index() {
@@ -35,6 +35,11 @@ export default function Index() {
             source={require("../assets/images/Frame.png")}
             style={styles.image}
             resizeMode="cover"
+          />
+          <Image
+            source={require("../assets/images/Qnext-logo.png")}
+            style={styles.headingLogo}
+            resizeMode="contain"
           />
           {/* <Text style={styles.heading}>Qnext</Text> */}
         </View>
@@ -88,6 +93,12 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
     marginTop: 50,
   },
+  headingLogo: {
+    marginTop: 50,
+    alignSelf: "center",
+    width: 140,
+    height: 50,
+  },
   mid: {
     flex: 1,
     marginTop: 80,
@@ -109,7 +120,7 @@ const styles = StyleSheet.create({
   },
   signupButton: {
     borderRadius: 38,
-    backgroundColor: "#096B72",
+    backgroundColor: "#020eba",
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -136,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginButton: {
-    color: "#096B72",
+    color: "#020eba",
     fontFamily: "Roboto_500Medium",
     fontSize: 14,
   },
