@@ -1,79 +1,91 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
+import { getAttendantTripDetail, getAttendantTrips } from "../api/trips";
 
 const { height: screenHeight } = Dimensions.get("window");
 
-const tripHistory = [
-  {
-    id: "1",
-    date: "April 15 2026",
-    startTime: "08:00 AM",
-    endTime: "09:00 AM",
-    status: "completed",
-    vehicle: { busName: "Shuttle A", busNumber: "101" },
-    route: { origin: "Qnx", destination: "One Ayala" },
-    passengerCount: 5,
-    passengers: ["Juan", "Maria", "Pedro", "Ana", "Luis"],
-  },
-  {
-    id: "2",
-    date: "April 14 2026",
-    startTime: "01:00 PM",
-    endTime: "02:15 PM",
-    status: "completed",
-    vehicle: { busName: "Shuttle 2", busNumber: "202" },
-    route: { origin: "Qnx", destination: "Lrt Gil Puyat" },
-    passengerCount: 3,
-    passengers: ["Mark", "John", "Lisa"],
-  },
-];
+const formatDate = (departed_at) => {
+  if (!departed_at) return "Unknown date";
+  const d = new Date(departed_at);
+  return d.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const formatTime = (departed_at) => {
+  if (!departed_at) return "--";
+  const d = new Date(departed_at);
+  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+};
 
 export default function TripHistory() {
   const router = useRouter();
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [expandedTripId, setExpandedTripId] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      const result = await getAttendantTrips();
+      if (result.success) setTrips(result.trips);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.screen, styles.centered]}>
+        <ActivityIndicator size="large" color="#020eba" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
-      {/* ✅ BLOB OUTSIDE PADDING FLOW */}
       <Image
         source={require("../assets/images/Blob.png")}
         style={styles.image}
       />
 
-      {/* CONTENT WRAPPER (THIS IS THE ONLY PADDED AREA) */}
       <View style={styles.content}>
-        {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#000" />
           </Pressable>
-
           <Text style={styles.title}>Trip History</Text>
         </View>
 
-        <FlatList
-          data={tripHistory}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          renderItem={({ item }) => (
-            <TripCard
-              item={item}
-              expandedTripId={expandedTripId}
-              setExpandedTripId={setExpandedTripId}
-            />
-          )}
-        />
+        {trips.length === 0 ? (
+          <Text style={styles.empty}>No trip history found.</Text>
+        ) : (
+          <FlatList
+            data={trips}
+            keyExtractor={(item) => item.trip_id}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            renderItem={({ item }) => (
+              <TripCard
+                item={item}
+                expandedTripId={expandedTripId}
+                setExpandedTripId={setExpandedTripId}
+              />
+            )}
+          />
+        )}
       </View>
     </View>
   );
@@ -81,43 +93,69 @@ export default function TripHistory() {
 
 /* ================= CARD ================= */
 function TripCard({ item, expandedTripId, setExpandedTripId }) {
-  const isExpanded = expandedTripId === item.id;
-
+  const isExpanded = expandedTripId === item.trip_id;
+  const [passengers, setPassengers] = useState([]);
+  const [loadingPassengers, setLoadingPassengers] = useState(false);
+  const cachedPassengers = useRef(null);
   const animatedHeight = useRef(new Animated.Value(0)).current;
 
-  const toggleExpand = () => {
+  const toggleExpand = async () => {
     if (isExpanded) {
       Animated.timing(animatedHeight, {
         toValue: 0,
         duration: 220,
         useNativeDriver: false,
       }).start(() => setExpandedTripId(null));
-    } else {
-      setExpandedTripId(item.id);
+      return;
+    }
+
+    setExpandedTripId(item.trip_id);
+
+    if (cachedPassengers.current !== null) {
+      setPassengers(cachedPassengers.current);
       Animated.timing(animatedHeight, {
-        toValue: item.passengers.length * 18,
+        toValue: cachedPassengers.current.length * 22 + 8,
         duration: 220,
         useNativeDriver: false,
       }).start();
+      return;
     }
+
+    // Show loading spinner at fixed height, then expand to full
+    Animated.timing(animatedHeight, {
+      toValue: 36,
+      duration: 150,
+      useNativeDriver: false,
+    }).start();
+
+    setLoadingPassengers(true);
+    const result = await getAttendantTripDetail(item.trip_id);
+    const pList = result.success ? result.detail.passengers : [];
+    cachedPassengers.current = pList;
+    setPassengers(pList);
+    setLoadingPassengers(false);
+
+    Animated.timing(animatedHeight, {
+      toValue: Math.max(pList.length * 22 + 8, 36),
+      duration: 150,
+      useNativeDriver: false,
+    }).start();
   };
 
   return (
     <View style={styles.card}>
-      <Text style={styles.date}>{item.date}</Text>
+      <Text style={styles.date}>{formatDate(item.departed_at)}</Text>
 
       <Text style={styles.bus}>
-        {item.vehicle.busName} ({item.vehicle.busNumber})
+        Shuttle No. {item.bus_number} • {item.plate_number}
       </Text>
 
       <Text style={styles.route}>
-        {item.route.origin} → {item.route.destination}
+        {item.origin} → {item.destination}
       </Text>
 
-      {/* Passenger toggle */}
       <Pressable style={styles.passengerRow} onPress={toggleExpand}>
-        <Text style={styles.detail}>Passengers: ({item.passengerCount})</Text>
-
+        <Text style={styles.detail}>Passengers: ({item.passenger_count})</Text>
         <Ionicons
           name={isExpanded ? "chevron-up" : "chevron-down"}
           size={18}
@@ -125,22 +163,22 @@ function TripCard({ item, expandedTripId, setExpandedTripId }) {
         />
       </Pressable>
 
-      {/* Animated list (NO EXTRA WHITE SPACE BUG FIXED) */}
       <Animated.View style={{ height: animatedHeight, overflow: "hidden" }}>
         <View style={styles.passengerBox}>
-          {item.passengers.map((p, i) => (
-            <Text key={i} style={styles.passenger}>
-              • {p}
-            </Text>
-          ))}
+          {loadingPassengers ? (
+            <ActivityIndicator size="small" color="#020eba" />
+          ) : (
+            passengers.map((p, i) => (
+              <Text key={i} style={styles.passenger}>
+                • {p.full_name}
+                {p.is_privileged ? " (PWD/Senior)" : ""}
+              </Text>
+            ))
+          )}
         </View>
       </Animated.View>
 
-      <Text style={styles.detail}>Status: {item.status.toUpperCase()}</Text>
-
-      <Text style={styles.time}>
-        {item.startTime} - {item.endTime}
-      </Text>
+      <Text style={styles.time}>Departed: {formatTime(item.departed_at)}</Text>
     </View>
   );
 }
@@ -152,7 +190,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  /* ✅ blob is absolute, NOT affected by padding */
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   image: {
     position: "absolute",
     top: 0,
@@ -161,7 +203,6 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
 
-  /* only real content gets padding */
   content: {
     flex: 1,
     padding: 20,
@@ -178,6 +219,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "700",
+  },
+
+  empty: {
+    textAlign: "center",
+    marginTop: 40,
+    color: "#666",
   },
 
   card: {
