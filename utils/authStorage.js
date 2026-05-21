@@ -109,3 +109,22 @@ export const getQueueId = async () => {
 export const clearQueueId = async () => {
   await AsyncStorage.removeItem(QUEUE_ID_KEY);
 };
+
+const LAST_ARRIVAL_KEY = "lastArrivalTime";
+
+export const setLastArrivalTime = async (isoString) => {
+  try {
+    await AsyncStorage.setItem(LAST_ARRIVAL_KEY, isoString);
+  } catch (e) {
+    console.error("Error saving arrival time:", e);
+  }
+};
+
+export const getLastArrivalTime = async () => {
+  try {
+    return await AsyncStorage.getItem(LAST_ARRIVAL_KEY);
+  } catch (e) {
+    console.error("Error retrieving arrival time:", e);
+    return null;
+  }
+};
