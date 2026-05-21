@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { getAttendantTripDetail, getAttendantTrips } from "../api/trips";
+import { getLastArrivalTime } from "../utils/authStorage";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -37,11 +38,16 @@ export default function TripHistory() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedTripId, setExpandedTripId] = useState(null);
+  const [lastArrivalTime, setLastArrivalTime] = useState(null);
 
   useEffect(() => {
     const load = async () => {
-      const result = await getAttendantTrips();
+      const [result, arrivedAt] = await Promise.all([
+        getAttendantTrips(),
+        getLastArrivalTime(),
+      ]);
       if (result.success) setTrips(result.trips);
+      setLastArrivalTime(arrivedAt);
       setLoading(false);
     };
     load();
@@ -77,11 +83,12 @@ export default function TripHistory() {
             data={trips}
             keyExtractor={(item) => item.trip_id}
             contentContainerStyle={{ paddingBottom: 20 }}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <TripCard
                 item={item}
                 expandedTripId={expandedTripId}
                 setExpandedTripId={setExpandedTripId}
+                arrivedAt={index === 0 ? lastArrivalTime : null}
               />
             )}
           />
@@ -92,7 +99,7 @@ export default function TripHistory() {
 }
 
 /* ================= CARD ================= */
-function TripCard({ item, expandedTripId, setExpandedTripId }) {
+function TripCard({ item, expandedTripId, setExpandedTripId, arrivedAt }) {
   const isExpanded = expandedTripId === item.trip_id;
   const [passengers, setPassengers] = useState([]);
   const [loadingPassengers, setLoadingPassengers] = useState(false);
@@ -178,7 +185,14 @@ function TripCard({ item, expandedTripId, setExpandedTripId }) {
         </View>
       </Animated.View>
 
-      <Text style={styles.time}>Departed: {formatTime(item.departed_at)}</Text>
+      <Text style={styles.time}>
+        Status: Departed at {formatTime(item.departed_at)}
+      </Text>
+      {arrivedAt && (
+        <Text style={styles.arrived}>
+          Status: Arrived at {formatTime(arrivedAt)}
+        </Text>
+      )}
     </View>
   );
 }
@@ -274,5 +288,11 @@ const styles = StyleSheet.create({
   passenger: {
     fontSize: 12,
     marginLeft: 10,
+  },
+
+  arrived: {
+    fontSize: 12,
+    marginTop: 4,
+    color: "#020eba",
   },
 });

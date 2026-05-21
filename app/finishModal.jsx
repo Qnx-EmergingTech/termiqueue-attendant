@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { updateBusStatus } from "../api/buses";
 import CustomizableModal from "../app/common/commonModal";
-import { setTripState } from "../utils/authStorage";
+import { setLastArrivalTime, setTripState } from "../utils/authStorage";
 
 export default function finishModal() {
   const router = useRouter();
@@ -19,6 +19,9 @@ export default function finishModal() {
       if (!result.success) {
         console.error(result.message);
         return;
+      }
+      if (result.bus?.updated_at) {
+        await setLastArrivalTime(result.bus.updated_at);
       }
       await setTripState("idle", "Set Active Status");
 
