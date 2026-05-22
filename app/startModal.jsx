@@ -72,13 +72,13 @@ export default function StartModal() {
       onClose={closeAndGoHome}
       onCancel={closeAndGoHome}
       onConfirm={handleConfirm}
-      confirmDisabled={loading}
       title="Want to start your trip?"
       message={`Capacity is at ${seatTaken}/${capacity}\nDrive Safe!`}
-      confirmText={loading ? "Starting..." : "Confirm"}
+      confirmText="Confirm"
       cancelText="Cancel"
       icon={require("../assets/images/success.png")}
       primaryColor="#020eba"
+      loading={loading}
     />
   );
 }

@@ -44,10 +44,17 @@ export default function Route() {
     setLoading(false);
 
     if (!res.success) {
-      return Alert.alert("Error", res.message);
+      const isCodingViolation =
+        res.message?.toLowerCase().includes("coding");
+      return Alert.alert(
+        isCodingViolation ? "Coding Restriction" : "Error",
+        isCodingViolation
+          ? "Warning: Operation of this vehicle during restricted hours may constitute a violation of the Metro Manila Unified Vehicular Volume Reduction Program (UVVRP)."
+          : res.message
+      );
     }
 
-    router.replace("/home");
+    router.replace("/(tabs)/home");
   };
 
   return (

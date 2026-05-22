@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { updateBusStatus } from "../api/buses";
+import { finishTrip } from "../api/buses";
 import CustomizableModal from "../app/common/commonModal";
 import { setLastArrivalTime, setTripState } from "../utils/authStorage";
 
@@ -15,7 +15,7 @@ export default function finishModal() {
 
     try {
       setLoading(true);
-      const result = await updateBusStatus(busId, "active");
+      const result = await finishTrip(busId);
       if (!result.success) {
         console.error(result.message);
         return;
@@ -45,12 +45,12 @@ export default function finishModal() {
       onClose={closeAndGoHome}
       onCancel={closeAndGoHome}
       onConfirm={handleConfirm}
-      confirmText={loading ? "Finishing..." : "Confirm"}
+      confirmText="Confirm"
       cancelText="Cancel"
       title="Want to finish your trip?"
       icon={require("../assets/images/success.png")}
       primaryColor="#020eba"
-      disabled={loading}
+      loading={loading}
     />
   );
 }
