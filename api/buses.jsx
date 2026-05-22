@@ -394,6 +394,37 @@ export const getAllBuses = async () => {
   }
 };
 
+export const finishTrip = async (busId) => {
+  try {
+    const idToken = await getToken();
+    if (!idToken) throw new Error("User not authenticated");
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/finish-trip`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = Array.isArray(data.detail)
+        ? data.detail.map((d) => d.msg).join(", ")
+        : data.detail || "Failed to finish trip";
+      throw new Error(msg);
+    }
+
+    return { success: true, bus: data };
+  } catch (error) {
+    console.error("Finish trip error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
 export const releaseBus = async (busId) => {
   try {
     const idToken = await getToken();
