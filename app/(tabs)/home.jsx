@@ -1,60 +1,79 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import MapView from "react-native-maps";
 import { Menu, Provider as PaperProvider } from "react-native-paper";
 import { getMyBus } from "../../api/buses";
 import LogoutModal from "../logoutModal";
+
+// Module-level cache — survives remounts from router.replace
+let _cachedBus = null;
+let _cachedRegion = null;
+
+const mapBusStatusToTripStatus = (busStatus) => {
+  switch (busStatus) {
+    case "available": return "idle";
+    case "active":    return "active";
+    case "arrived":   return "arrived";
+    case "in_transit":return "ongoing";
+    default:          return "idle";
+  }
+};
+
+const getActionLabel = (status) => {
+  switch (status) {
+    case "idle":    return "Set Active Status";
+    case "active":  return "Update Status";
+    case "arrived": return "Start Your Trip";
+    case "ongoing": return "Finish Trip";
+    default:        return "Set Active Status";
+  }
+};
 
 export default function Home() {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
   const [logoutVisible, setLogoutVisible] = useState(false);
-  const [region, setRegion] = useState(null);
-  const [myBus, setMyBus] = useState(null);
-  const [isFetchingBus, setIsFetchingBus] = useState(true);
-  const openMenu = () => setMenuVisible(true);
+  const [region, setRegion] = useState(_cachedRegion);
+  const regionSet = useRef(!!_cachedRegion);
+  const [locationDenied, setLocationDenied] = useState(false);
+
+  const initialStatus = _cachedBus ? mapBusStatusToTripStatus(_cachedBus.status) : "idle";
+  const [myBus, setMyBus] = useState(_cachedBus);
+  const [isFetchingBus, setIsFetchingBus] = useState(!_cachedBus);
+  const [tripStatus, setTripStatus] = useState(initialStatus);
+  const [actionButtonLabel, setActionButtonLabel] = useState(getActionLabel(initialStatus));
+
   const closeMenu = () => setMenuVisible(false);
   const toggleMenu = () => setMenuVisible((prev) => !prev);
-  const [tripStatus, setTripStatus] = useState("idle");
-  const [actionButtonLabel, setActionButtonLabel] =
-    useState("Set Active Status");
-  const isButtonDisabled = isFetchingBus;
+  const isButtonDisabled = isFetchingBus || !myBus;
 
   const handleLogout = () => {
     closeMenu();
     setLogoutVisible(true);
   };
 
-  const mapBusStatusToTripStatus = (busStatus) => {
-    switch (busStatus) {
-      case "available":
-        return "idle";
-      case "active":
-        return "active";
-      case "arrived":
-        return "arrived";
-      case "in_transit":
-        return "ongoing";
-      default:
-        return "idle";
-    }
-  };
-
   const fetchMyBus = async () => {
-    setIsFetchingBus(true);
+    if (!_cachedBus) setIsFetchingBus(true);
     try {
       const result = await getMyBus();
       if (result.success && result.bus) {
+        _cachedBus = result.bus;
         setMyBus(result.bus);
-
         const derivedStatus = mapBusStatusToTripStatus(result.bus.status);
         setTripStatus(derivedStatus);
-        setActionButtonLabel("");
-      } else {
-        console.log("No assigned bus or failed to fetch.");
+        setActionButtonLabel(getActionLabel(derivedStatus));
+      } else if (!_cachedBus) {
+        Alert.alert(
+          "No Shuttle Assigned",
+          "You don't have a shuttle assigned yet. Would you like to claim one now?",
+          [
+            { text: "Not Now", style: "cancel" },
+            { text: "Claim a Shuttle", onPress: () => router.push("/route") },
+          ]
+        );
       }
     } catch (err) {
       console.error("Error fetching my bus:", err);
@@ -67,33 +86,26 @@ export default function Home() {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        alert("Permission to access location was denied.");
+        setLocationDenied(true);
         return;
       }
       await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Highest, distanceInterval: 1 },
         (location) => {
-          setRegion({
+          const r = {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
-          });
+          };
+          _cachedRegion = r;
+          setRegion(r);
+          regionSet.current = true;
         },
       );
       await fetchMyBus();
     })();
   }, []);
-
-  useEffect(() => {
-    if (!actionButtonLabel) {
-      if (tripStatus === "idle") setActionButtonLabel("Set Active Status");
-      else if (tripStatus === "active") setActionButtonLabel("Update Status");
-      else if (tripStatus === "arrived")
-        setActionButtonLabel("Start Your Trip");
-      else if (tripStatus === "ongoing") setActionButtonLabel("Finish Trip");
-    }
-  }, [tripStatus]);
 
   return (
     <PaperProvider>
@@ -155,10 +167,35 @@ export default function Home() {
             <Menu.Item
               onPress={() => {
                 closeMenu();
-                router.push({
-                  pathname: "/re-route",
-                  params: { currentBusId: myBus?.id },
-                });
+                if (!myBus) {
+                  router.push("/route");
+                  return;
+                }
+                const hasPassengers =
+                  tripStatus === "arrived" || tripStatus === "ongoing";
+                if (hasPassengers) {
+                  Alert.alert(
+                    "Passengers On Board",
+                    "Note: You still have passengers assigned to your current shuttle. Changing shuttles now may disrupt their trip.\n\nOnly proceed if absolutely necessary.",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Change Anyway",
+                        style: "destructive",
+                        onPress: () =>
+                          router.push({
+                            pathname: "/re-route",
+                            params: { currentBusId: myBus.id },
+                          }),
+                      },
+                    ]
+                  );
+                } else {
+                  router.push({
+                    pathname: "/re-route",
+                    params: { currentBusId: myBus.id },
+                  });
+                }
               }}
               title="Change Shuttle"
               leadingIcon={() => (
@@ -197,16 +234,24 @@ export default function Home() {
           </Menu>
         </View>
 
-        {region && (
+        {locationDenied ? (
+          <View style={[styles.map, styles.mapDenied]}>
+            <Ionicons name="location-outline" size={32} color="#A1A4B2" />
+            <Text style={styles.mapDeniedText}>
+              Location access is required to show the map.
+            </Text>
+            <Text style={styles.mapDeniedSub}>
+              Enable it in your device Settings to continue.
+            </Text>
+          </View>
+        ) : region ? (
           <MapView
             style={styles.map}
             region={region}
             showsUserLocation
             showsMyLocationButton
-          >
-            <Marker coordinate={region} title="You are here" />
-          </MapView>
-        )}
+          />
+        ) : null}
 
         <View style={styles.info}>
           {myBus ? (
@@ -220,7 +265,7 @@ export default function Home() {
               </Text>
             </>
           ) : (
-            <Text style={styles.destination}>Loading bus info...</Text>
+            <Text style={styles.destination}>No shuttle assigned yet.</Text>
           )}
         </View>
 
@@ -317,6 +362,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 30,
     marginBottom: 20,
+  },
+  mapDenied: {
+    backgroundColor: "#F2F3F7",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+  mapDeniedText: {
+    fontSize: 14,
+    fontFamily: "Roboto_500Medium",
+    color: "#333",
+    textAlign: "center",
+    paddingHorizontal: 20,
+  },
+  mapDeniedSub: {
+    fontSize: 12,
+    fontFamily: "Roboto_400Regular",
+    color: "#A1A4B2",
+    textAlign: "center",
+    paddingHorizontal: 20,
   },
   activeButton: {
     backgroundColor: "#020eba",
