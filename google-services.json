@@ -16,6 +16,31 @@
       "api_key": [
         {
           "current_key": "AIzaSyCSq-dwmOEMZbXnKxXxU2ch-w2Gm7dDaiA"
+        },
+        {
+          "current_key": "AIzaSyDS43DzJVWGpaHqX6Ln2DFcoMfeBmX7axs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:655635157366:android:fd95c12d6b38bed0c0aa57",
+        "android_client_info": {
+          "package_name": "com.questronix.qnextattendant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSq-dwmOEMZbXnKxXxU2ch-w2Gm7dDaiA"
+        },
+        {
+          "current_key": "AIzaSyDS43DzJVWGpaHqX6Ln2DFcoMfeBmX7axs"
         }
       ],
       "services": {
