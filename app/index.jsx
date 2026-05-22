@@ -1,5 +1,7 @@
+import { onAuthStateChanged } from "firebase/auth";
 import { Link, Stack, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getUser } from "../utils/authStorage";
 import {
   ActivityIndicator,
   Dimensions,
@@ -9,21 +11,43 @@ import {
   Text,
   View,
 } from "react-native";
+import { auth } from "../firebaseConfig";
 
 export default function Index() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const savedUser = await getUser();
+        if (savedUser) {
+          router.replace("/(tabs)/home");
+        } else {
+          router.replace("/kyc");
+        }
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const handleSignup = () => {
     if (loading) return;
-
     setLoading(true);
     router.push("/signup");
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
+    setTimeout(() => setLoading(false), 500);
   };
+
+  if (checkingAuth) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#020eba" />
+      </View>
+    );
+  }
 
   return (
     <>

@@ -57,7 +57,7 @@ export default function ReRoute() {
       return Alert.alert("Error", claimRes.message);
     }
 
-    router.replace("/home");
+    router.replace("/(tabs)/home");
   };
 
   return (
