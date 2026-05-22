@@ -46,7 +46,12 @@ export default function TripHistory() {
         getAttendantTrips(),
         getLastArrivalTime(),
       ]);
-      if (result.success) setTrips(result.trips);
+      if (result.success) {
+        const sorted = [...result.trips].sort(
+          (a, b) => new Date(b.departed_at) - new Date(a.departed_at)
+        );
+        setTrips(sorted);
+      }
       setLastArrivalTime(arrivedAt);
       setLoading(false);
     };
