@@ -1,7 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { Link, Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { getUser } from "../utils/authStorage";
 import {
   ActivityIndicator,
   Dimensions,
@@ -19,14 +18,13 @@ export default function Index() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
+    let initialCheckDone = false;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (initialCheckDone) return;
+      initialCheckDone = true;
+
       if (user) {
-        const savedUser = await getUser();
-        if (savedUser) {
-          router.replace("/(tabs)/home");
-        } else {
-          router.replace("/kyc");
-        }
+        router.replace("/(tabs)/home");
       } else {
         setCheckingAuth(false);
       }
