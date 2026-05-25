@@ -6,6 +6,7 @@ import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from "react-nati
 import MapView from "react-native-maps";
 import { Menu, Provider as PaperProvider } from "react-native-paper";
 import { getMyBus } from "../../api/buses";
+import { signOutAccount } from "../../api/auth";
 import LogoutModal from "../logoutModal";
 
 // Module-level cache — survives remounts from router.replace
@@ -66,6 +67,24 @@ export default function Home() {
         const derivedStatus = mapBusStatusToTripStatus(result.bus.status);
         setTripStatus(derivedStatus);
         setActionButtonLabel(getActionLabel(derivedStatus));
+      } else if (
+        result.message?.toLowerCase().includes("invalid") ||
+        result.message?.toLowerCase().includes("expired")
+      ) {
+        Alert.alert(
+          "Session Expired",
+          "Your session has expired. Please log in again.",
+          [
+            {
+              text: "OK",
+              onPress: async () => {
+                await signOutAccount();
+                router.replace("/login");
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       } else {
         _cachedBus = null;
         setMyBus(null);
@@ -170,50 +189,42 @@ export default function Home() {
               }}
             />
             <Menu.Item
+              disabled={myBus && (tripStatus === "arrived" || tripStatus === "ongoing")}
               onPress={() => {
                 closeMenu();
                 if (!myBus) {
                   router.push("/route");
                   return;
                 }
-                const hasPassengers =
-                  tripStatus === "arrived" || tripStatus === "ongoing";
-                if (hasPassengers) {
-                  Alert.alert(
-                    "Passengers On Board",
-                    "Note: You still have passengers assigned to your current shuttle. Changing shuttles now may disrupt their trip.\n\nOnly proceed if absolutely necessary.",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      {
-                        text: "Change Anyway",
-                        style: "destructive",
-                        onPress: () =>
-                          router.push({
-                            pathname: "/re-route",
-                            params: { currentBusId: myBus.id },
-                          }),
-                      },
-                    ]
-                  );
-                } else {
-                  router.push({
-                    pathname: "/re-route",
-                    params: { currentBusId: myBus.id },
-                  });
-                }
+                router.push({
+                  pathname: "/re-route",
+                  params: { currentBusId: myBus.id },
+                });
               }}
               title="Change Shuttle"
+              description={
+                myBus && (tripStatus === "arrived" || tripStatus === "ongoing")
+                  ? "Not permitted while a trip is in progress"
+                  : undefined
+              }
               leadingIcon={() => (
                 <Ionicons
                   name="swap-horizontal-outline"
                   size={24}
-                  color="#020eba"
+                  color={
+                    myBus && (tripStatus === "arrived" || tripStatus === "ongoing")
+                      ? "#A1A4B2"
+                      : "#020eba"
+                  }
                 />
               )}
               titleStyle={{
                 fontFamily: "Roboto_500Medium",
                 fontSize: 16,
-                color: "#333",
+                color:
+                  myBus && (tripStatus === "arrived" || tripStatus === "ongoing")
+                    ? "#A1A4B2"
+                    : "#333",
               }}
               style={{
                 paddingVertical: 10,
@@ -276,49 +287,62 @@ export default function Home() {
 
         <View style={styles.box}>
           <Text style={styles.status}>
-            {tripStatus === "idle"
-              ? "Waiting for you to arrive"
-              : tripStatus === "active"
-                ? "You are now active, and on your way!"
-                : tripStatus === "arrived"
-                  ? "Ready to start your trip"
-                  : tripStatus === "ongoing"
-                    ? "On Going"
-                    : "Waiting for you to arrive"}
+            {!myBus
+              ? "No shuttle assigned"
+              : tripStatus === "idle"
+                ? "Waiting for you to arrive"
+                : tripStatus === "active"
+                  ? "You are now active, and on your way!"
+                  : tripStatus === "arrived"
+                    ? "Ready to start your trip"
+                    : tripStatus === "ongoing"
+                      ? "On Going"
+                      : "Waiting for you to arrive"}
           </Text>
 
           <Text style={styles.time}>
-            Keep an eye on your route and schedule.
+            {!myBus
+              ? "Claim a shuttle to get started."
+              : "Keep an eye on your route and schedule."}
           </Text>
         </View>
 
         <View>
-          <Pressable
-            disabled={isButtonDisabled}
-            style={[styles.activeButton, isButtonDisabled && { opacity: 0.5 }]}
-            onPress={() => {
-              if (actionButtonLabel === "Set Active Status") {
-                router.push("/activeModal");
-              } else if (actionButtonLabel === "Update Status") {
-                router.push({
-                  pathname: "/arrivedModal",
-                  params: { busId: myBus.id },
-                });
-              } else if (actionButtonLabel === "Start Your Trip") {
-                router.push({
-                  pathname: "/startModal",
-                  params: { busId: myBus.id },
-                });
-              } else if (actionButtonLabel === "Finish Trip") {
-                router.push({
-                  pathname: "/finishModal",
-                  params: { busId: myBus.id },
-                });
-              }
-            }}
-          >
-            <Text style={styles.active}>{actionButtonLabel}</Text>
-          </Pressable>
+          {!myBus ? (
+            <Pressable
+              style={styles.activeButton}
+              onPress={() => router.push("/route")}
+            >
+              <Text style={styles.active}>Claim a Shuttle</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              disabled={isButtonDisabled}
+              style={[styles.activeButton, isButtonDisabled && { opacity: 0.5 }]}
+              onPress={() => {
+                if (actionButtonLabel === "Set Active Status") {
+                  router.push("/activeModal");
+                } else if (actionButtonLabel === "Update Status") {
+                  router.push({
+                    pathname: "/arrivedModal",
+                    params: { busId: myBus.id },
+                  });
+                } else if (actionButtonLabel === "Start Your Trip") {
+                  router.push({
+                    pathname: "/startModal",
+                    params: { busId: myBus.id },
+                  });
+                } else if (actionButtonLabel === "Finish Trip") {
+                  router.push({
+                    pathname: "/finishModal",
+                    params: { busId: myBus.id },
+                  });
+                }
+              }}
+            >
+              <Text style={styles.active}>{actionButtonLabel}</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </PaperProvider>
