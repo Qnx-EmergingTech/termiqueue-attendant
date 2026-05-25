@@ -13,13 +13,12 @@ import {
   View,
 } from "react-native";
 import { getAttendantTripDetail, getAttendantTrips } from "../api/trips";
-import { getLastArrivalTime } from "../utils/authStorage";
 
 const { height: screenHeight } = Dimensions.get("window");
 
-const formatDate = (departed_at) => {
-  if (!departed_at) return "Unknown date";
-  const d = new Date(departed_at);
+const formatDate = (ts) => {
+  if (!ts) return "Unknown date";
+  const d = new Date(ts);
   return d.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -27,9 +26,9 @@ const formatDate = (departed_at) => {
   });
 };
 
-const formatTime = (departed_at) => {
-  if (!departed_at) return "--";
-  const d = new Date(departed_at);
+const formatTime = (ts) => {
+  if (!ts) return "--";
+  const d = new Date(ts);
   return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 };
 
@@ -38,21 +37,16 @@ export default function TripHistory() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedTripId, setExpandedTripId] = useState(null);
-  const [lastArrivalTime, setLastArrivalTime] = useState(null);
 
   useEffect(() => {
     const load = async () => {
-      const [result, arrivedAt] = await Promise.all([
-        getAttendantTrips(),
-        getLastArrivalTime(),
-      ]);
+      const result = await getAttendantTrips();
       if (result.success) {
         const sorted = [...result.trips].sort(
-          (a, b) => new Date(b.departed_at) - new Date(a.departed_at)
+          (a, b) => new Date(b.finished_at) - new Date(a.finished_at)
         );
         setTrips(sorted);
       }
-      setLastArrivalTime(arrivedAt);
       setLoading(false);
     };
     load();
@@ -88,12 +82,11 @@ export default function TripHistory() {
             data={trips}
             keyExtractor={(item) => item.trip_id}
             contentContainerStyle={{ paddingBottom: 20 }}
-            renderItem={({ item, index }) => (
+            renderItem={({ item }) => (
               <TripCard
                 item={item}
                 expandedTripId={expandedTripId}
                 setExpandedTripId={setExpandedTripId}
-                arrivedAt={index === 0 ? lastArrivalTime : null}
               />
             )}
           />
@@ -104,7 +97,7 @@ export default function TripHistory() {
 }
 
 /* ================= CARD ================= */
-function TripCard({ item, expandedTripId, setExpandedTripId, arrivedAt }) {
+function TripCard({ item, expandedTripId, setExpandedTripId }) {
   const isExpanded = expandedTripId === item.trip_id;
   const [passengers, setPassengers] = useState([]);
   const [loadingPassengers, setLoadingPassengers] = useState(false);
@@ -156,7 +149,7 @@ function TripCard({ item, expandedTripId, setExpandedTripId, arrivedAt }) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.date}>{formatDate(item.departed_at)}</Text>
+      <Text style={styles.date}>{formatDate(item.finished_at)}</Text>
 
       <Text style={styles.bus}>
         Shuttle No. {item.bus_number} • {item.plate_number}
@@ -191,11 +184,11 @@ function TripCard({ item, expandedTripId, setExpandedTripId, arrivedAt }) {
       </Animated.View>
 
       <Text style={styles.time}>
-        Status: Departed at {formatTime(item.departed_at)}
+        Departed: {formatTime(item.departed_at)}
       </Text>
-      {arrivedAt && (
+      {item.finished_at && (
         <Text style={styles.arrived}>
-          Status: Arrived at {formatTime(arrivedAt)}
+          Finished: {formatTime(item.finished_at)}
         </Text>
       )}
     </View>

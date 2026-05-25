@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { Alert } from "react-native";
 import { finishTrip } from "../api/buses";
 import CustomizableModal from "../app/common/commonModal";
 import { setLastArrivalTime, setTripState } from "../utils/authStorage";
@@ -26,7 +27,14 @@ export default function finishModal() {
       await setTripState("idle", "Set Active Status");
 
       setVisible(false);
-      router.replace("/(tabs)/home");
+      Alert.alert(
+        "Trip Complete!",
+        "Your trip has been finished. Would you like to claim a new shuttle?",
+        [
+          { text: "Not Now", style: "cancel", onPress: () => router.replace("/(tabs)/home") },
+          { text: "Claim a Shuttle", onPress: () => router.replace("/route") },
+        ]
+      );
     } catch (err) {
       console.error("Finish trip error:", err);
     } finally {

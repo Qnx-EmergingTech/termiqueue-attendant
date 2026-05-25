@@ -56,6 +56,7 @@ export default function Home() {
   };
 
   const fetchMyBus = async () => {
+    const hadCachedBus = !!_cachedBus;
     if (!_cachedBus) setIsFetchingBus(true);
     try {
       const result = await getMyBus();
@@ -65,15 +66,19 @@ export default function Home() {
         const derivedStatus = mapBusStatusToTripStatus(result.bus.status);
         setTripStatus(derivedStatus);
         setActionButtonLabel(getActionLabel(derivedStatus));
-      } else if (!_cachedBus) {
-        Alert.alert(
-          "No Shuttle Assigned",
-          "You don't have a shuttle assigned yet. Would you like to claim one now?",
-          [
-            { text: "Not Now", style: "cancel" },
-            { text: "Claim a Shuttle", onPress: () => router.push("/route") },
-          ]
-        );
+      } else {
+        _cachedBus = null;
+        setMyBus(null);
+        if (!hadCachedBus) {
+          Alert.alert(
+            "No Shuttle Assigned",
+            "You don't have a shuttle assigned yet. Would you like to claim one now?",
+            [
+              { text: "Not Now", style: "cancel" },
+              { text: "Claim a Shuttle", onPress: () => router.push("/route") },
+            ]
+          );
+        }
       }
     } catch (err) {
       console.error("Error fetching my bus:", err);
