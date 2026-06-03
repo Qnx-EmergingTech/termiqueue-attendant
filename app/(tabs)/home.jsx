@@ -2,8 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
-import MapView from "react-native-maps";
+import { Alert, Dimensions, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { Menu, Provider as PaperProvider } from "react-native-paper";
 import { getMyBus } from "../../api/buses";
 import { signOutAccount } from "../../api/auth";
@@ -262,6 +262,7 @@ export default function Home() {
           </View>
         ) : region ? (
           <MapView
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : null}
             style={styles.map}
             region={region}
             showsUserLocation
