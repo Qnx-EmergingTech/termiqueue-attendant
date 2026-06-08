@@ -9,7 +9,7 @@ export default function BusCard({ bus, selected, onPress }) {
       <Text style={styles.busName}>{bus.bus_name}</Text>
 
       <Text style={styles.meta}>
-        Bus No: {bus.bus_number} • Plate: {bus.plate_number}
+        Vehicle No: {bus.bus_number} • Plate: {bus.plate_number}
       </Text>
 
       <View style={styles.row}>

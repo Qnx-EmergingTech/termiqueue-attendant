@@ -158,35 +158,56 @@ const Passenger = () => {
       .join(" ");
   };
 
-  const boardedPassengers = passengers.filter((p) => p.status === "boarded");
+  const boardedPassengers = passengers.filter(
+    (p) => p.status === "boarded" || p.status === "ongoing",
+  );
 
-  const queuePassengers = passengers.filter((p) => p.status !== "boarded");
+  const queuePassengers = passengers.filter(
+    (p) => p.status !== "boarded" && p.status !== "ongoing",
+  );
 
   const boardedCount = boardedPassengers.length;
   const queueCount = queuePassengers.length;
   const remainingCapacity = Math.max(capacity - boardedCount, 0);
 
   const renderPassenger = ({ item }) => {
-    const isHere = item.status === "boarded";
+    const isBoarded = item.status === "boarded";
+    const isOngoing = item.status === "ongoing";
 
     return (
       <View style={styles.passengerRow}>
-        <View style={[styles.iconCircle, !isHere && styles.iconCircleDisabled]}>
+        <View
+          style={[
+            styles.iconCircle,
+            isOngoing && styles.iconCircleOngoing,
+            !isBoarded && !isOngoing && styles.iconCircleDisabled,
+          ]}
+        >
           <Image
             source={
-              isHere
+              isBoarded || isOngoing
                 ? require("../../assets/images/seat-passenger.png")
                 : require("../../assets/images/seat-passenger-disable.png")
             }
-            style={styles.iconImage}
+            style={[styles.iconImage, isOngoing && { tintColor: "#F5A623" }]}
             resizeMode="contain"
           />
         </View>
 
         <View>
           <Text style={styles.passengerId}>{maskName(item.name)}</Text>
-          <Text style={[styles.status, isHere && styles.statusHere]}>
-            {isHere ? "Already here" : "Not yet boarded"}
+          <Text
+            style={[
+              styles.status,
+              isBoarded && styles.statusHere,
+              isOngoing && styles.statusOngoing,
+            ]}
+          >
+            {isBoarded
+              ? "Already here"
+              : isOngoing
+                ? "Ongoing"
+                : "Not yet boarded"}
           </Text>
         </View>
       </View>
@@ -360,6 +381,15 @@ const styles = StyleSheet.create({
 
   statusHere: {
     color: "#59A96A",
+  },
+
+  statusOngoing: {
+    color: "#F5A623",
+  },
+
+  iconCircleOngoing: {
+    borderColor: "#F5A623",
+    backgroundColor: "#FFF8EC",
   },
 
   counterBubble: {
