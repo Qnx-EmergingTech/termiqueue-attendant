@@ -9,7 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.qymera.qnextattendant",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -20,7 +22,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.questronix.qnextattendant",
+      "package": "com.qymera.qnextattendant",
       "permissions": ["android.permission.CAMERA"]
     },
     "web": {
