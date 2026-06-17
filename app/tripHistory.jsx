@@ -43,7 +43,7 @@ export default function TripHistory() {
       const result = await getAttendantTrips();
       if (result.success) {
         const sorted = [...result.trips].sort(
-          (a, b) => new Date(b.finished_at) - new Date(a.finished_at)
+          (a, b) => new Date(b.finished_at) - new Date(a.finished_at),
         );
         setTrips(sorted);
       }
@@ -183,9 +183,7 @@ function TripCard({ item, expandedTripId, setExpandedTripId }) {
         </View>
       </Animated.View>
 
-      <Text style={styles.time}>
-        Departed: {formatTime(item.departed_at)}
-      </Text>
+      <Text style={styles.time}>Departed: {formatTime(item.departed_at)}</Text>
       {item.finished_at && (
         <Text style={styles.arrived}>
           Finished: {formatTime(item.finished_at)}
@@ -210,9 +208,8 @@ const styles = StyleSheet.create({
   image: {
     position: "absolute",
     top: 0,
+    height: screenHeight * 0.45,
     width: "100%",
-    height: screenHeight * 0.35,
-    zIndex: 0,
   },
 
   content: {
@@ -240,7 +237,7 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FAF9F6",
     padding: 15,
     borderRadius: 12,
     marginBottom: 12,

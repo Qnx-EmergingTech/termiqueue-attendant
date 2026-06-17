@@ -9,10 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "config": {
-        "googleMapsApiKey": "AIzaSyASS4Q4g2pSYeDwqpEnw97lJo1DbzdG2RY"
-      }
+      "supportsTablet": true
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -24,14 +21,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.questronix.qnextattendant",
-      "permissions": [
-        "android.permission.CAMERA"
-      ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyDDNG2JviPQbBLuCT_cwzjcd47ENs8TROs"
-        }
-      }
+      "permissions": ["android.permission.CAMERA"]
     },
     "web": {
       "output": "static",
