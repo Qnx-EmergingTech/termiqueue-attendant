@@ -33,6 +33,7 @@ export default function AppLayout() {
      <SafeScreen onLayout={onLayoutRootView}>
       <Stack screenOptions={{
         headerShown: false,
+        headerBackTitleVisible: false,
       }}
       onLayout={onLayoutRootView}>
         <Stack.Screen name="(tabs)" />
