@@ -1,5 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   Alert,
@@ -16,6 +17,7 @@ import BusCard from "./common/busCard";
 
 export default function ReRoute() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { currentBusId } = useLocalSearchParams();
 
   const [buses, setBuses] = useState([]);
@@ -110,7 +112,7 @@ export default function ReRoute() {
         </ScrollView>
 
         <Pressable
-          style={[styles.proceedButton, !selectedBusId && styles.disabled]}
+          style={[styles.proceedButton, !selectedBusId && styles.disabled, { bottom: insets.bottom + 16 }]}
           onPress={handleChangeBus}
           disabled={!selectedBusId || loading || fetching}
         >
@@ -153,7 +155,6 @@ const styles = StyleSheet.create({
   },
   proceedButton: {
     position: "absolute",
-    bottom: 30,
     left: 20,
     right: 20,
     borderRadius: 38,
