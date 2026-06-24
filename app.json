@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "QNext Attendant",
-    "slug": "termiQAttendant",
+    "slug": "qnext-attendant",
+    "owner": "qnxdev",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/qnextlogo.png",
@@ -53,7 +54,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "34579200-49d8-400c-aee2-6770a12dc532"
+        "projectId": "964573e2-cd5e-4a66-bb3b-071ebaca0812"
       }
     }
   }

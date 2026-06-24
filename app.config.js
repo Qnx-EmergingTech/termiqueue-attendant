@@ -7,7 +7,7 @@ module.exports = ({ config }) => ({
     ...config.ios,
     config: {
       ...config.ios?.config,
-      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyCCqG1urGsVMYo1yP6hKHKl0zEeNUKAvtw",
     },
   },
   android: {
@@ -15,7 +15,7 @@ module.exports = ({ config }) => ({
     config: {
       ...config.android?.config,
       googleMaps: {
-        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyCCqG1urGsVMYo1yP6hKHKl0zEeNUKAvtw",
       },
     },
   },

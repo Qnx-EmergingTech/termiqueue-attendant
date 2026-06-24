@@ -1,5 +1,6 @@
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   Alert,
@@ -16,6 +17,7 @@ import BusCard from "../app/common/busCard";
 
 export default function Route() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [buses, setBuses] = useState([]);
   const [selectedBusId, setSelectedBusId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -107,7 +109,7 @@ export default function Route() {
         </ScrollView>
 
         <Pressable
-          style={[styles.proceedButton, !selectedBusId && styles.disabled]}
+          style={[styles.proceedButton, !selectedBusId && styles.disabled, { bottom: insets.bottom + 16 }]}
           onPress={handleClaim}
           disabled={!selectedBusId || loading || fetching}
         >
@@ -155,7 +157,6 @@ const styles = StyleSheet.create({
 
   proceedButton: {
     position: "absolute",
-    bottom: 30,
     left: 20,
     right: 20,
     borderRadius: 38,

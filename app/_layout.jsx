@@ -8,6 +8,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 // remove safescreen for top white space, temporary solution?
 import SafeScreen from "../components/SafeScreen";
 
@@ -30,18 +31,21 @@ export default function AppLayout() {
   if (!fontsLoaded) return null;
 
   return (
-     <SafeScreen onLayout={onLayoutRootView}>
-      <Stack screenOptions={{
-        headerShown: false,
-      }}
-      onLayout={onLayoutRootView}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="login" />
-        <Stack.Screen name="signup" />
-        <Stack.Screen name="index" />
-        <Stack.Screen name="kyc" />
-        <Stack.Screen name="route" />
-      </Stack>
-    </SafeScreen> 
+    <SafeAreaProvider>
+      <SafeScreen onLayout={onLayoutRootView}>
+        <Stack screenOptions={{
+          headerShown: false,
+          headerBackTitleVisible: false,
+        }}
+        onLayout={onLayoutRootView}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="signup" />
+          <Stack.Screen name="index" />
+          <Stack.Screen name="kyc" />
+          <Stack.Screen name="route" />
+        </Stack>
+      </SafeScreen>
+    </SafeAreaProvider>
   );
 }
