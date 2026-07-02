@@ -1,6 +1,5 @@
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   Alert,
@@ -12,8 +11,32 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { claimBus, getAllBuses } from "../api/buses";
 import BusCard from "../app/common/busCard";
+
+const CODING_DAY_BY_LAST_DIGIT = {
+  1: 1,
+  2: 1, // Monday
+  3: 2,
+  4: 2, // Tuesday
+  5: 3,
+  6: 3, // Wednesday
+  7: 4,
+  8: 4, // Thursday
+  9: 5,
+  0: 5, // Friday
+};
+
+function filterBySchedule(buses) {
+  const today = new Date().getDay();
+  if (today === 0 || today === 6) return buses;
+
+  return buses.filter((bus) => {
+    const lastDigit = Number(bus.plate_number.slice(-1));
+    return CODING_DAY_BY_LAST_DIGIT[lastDigit] !== today;
+  });
+}
 
 export default function Route() {
   const router = useRouter();
@@ -28,7 +51,8 @@ export default function Route() {
       setFetching(true);
       const res = await getAllBuses();
       if (res.success) {
-        setBuses(res.buses.filter((bus) => bus.status === "available"));
+        const available = res.buses.filter((bus) => bus.status === "available");
+        setBuses(filterBySchedule(available));
       }
       setFetching(false);
     };
@@ -46,13 +70,12 @@ export default function Route() {
     setLoading(false);
 
     if (!res.success) {
-      const isCodingViolation =
-        res.message?.toLowerCase().includes("coding");
+      const isCodingViolation = res.message?.toLowerCase().includes("coding");
       return Alert.alert(
         isCodingViolation ? "Coding Restriction" : "Error",
         isCodingViolation
           ? "Warning: Operation of this vehicle during restricted hours may constitute a violation of the Metro Manila Unified Vehicular Volume Reduction Program (UVVRP)."
-          : res.message
+          : res.message,
       );
     }
 
@@ -67,6 +90,7 @@ export default function Route() {
           headerTitle: "",
           headerTransparent: true,
           headerBackTitleVisible: false,
+          gestureEnabled: true,
         }}
       />
 
@@ -109,7 +133,11 @@ export default function Route() {
         </ScrollView>
 
         <Pressable
-          style={[styles.proceedButton, !selectedBusId && styles.disabled, { bottom: insets.bottom + 16 }]}
+          style={[
+            styles.proceedButton,
+            !selectedBusId && styles.disabled,
+            { bottom: insets.bottom + 16 },
+          ]}
           onPress={handleClaim}
           disabled={!selectedBusId || loading || fetching}
         >
