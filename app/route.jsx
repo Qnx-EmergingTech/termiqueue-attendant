@@ -28,14 +28,40 @@ const CODING_DAY_BY_LAST_DIGIT = {
   0: 5, // Friday
 };
 
-function filterBySchedule(buses) {
-  const today = new Date().getDay();
-  if (today === 0 || today === 6) return buses;
+const PRIMARY_PLATE_NUMBER = "NLF4077";
+const BACKUP_PLATE_NUMBER = "NJF9354";
 
-  return buses.filter((bus) => {
-    const lastDigit = Number(bus.plate_number.slice(-1));
-    return CODING_DAY_BY_LAST_DIGIT[lastDigit] !== today;
-  });
+const normalizePlate = (plate) => plate?.replace(/\s+/g, "").toUpperCase();
+
+function isCodingRestrictedToday(bus) {
+  const today = new Date().getDay();
+  if (today === 0 || today === 6) return false;
+
+  const lastDigit = Number(normalizePlate(bus.plate_number).slice(-1));
+  return CODING_DAY_BY_LAST_DIGIT[lastDigit] === today;
+}
+
+function annotateBuses(buses) {
+  const isUsablePrimary = (bus) =>
+    normalizePlate(bus.plate_number) === PRIMARY_PLATE_NUMBER &&
+    bus.status === "available" &&
+    !isCodingRestrictedToday(bus);
+
+  const hasUsablePrimary = buses.some(isUsablePrimary);
+
+  return buses
+    .filter((bus) => !isCodingRestrictedToday(bus))
+    .filter((bus) => !(normalizePlate(bus.plate_number) === BACKUP_PLATE_NUMBER && hasUsablePrimary))
+    .map((bus) => {
+      if (bus.status !== "available") {
+        return {
+          ...bus,
+          disabled: true,
+          reason: `Claimed by ${bus.attendant_name || "another attendant"}`,
+        };
+      }
+      return { ...bus, disabled: false, reason: null };
+    });
 }
 
 export default function Route() {
@@ -51,8 +77,7 @@ export default function Route() {
       setFetching(true);
       const res = await getAllBuses();
       if (res.success) {
-        const available = res.buses.filter((bus) => bus.status === "available");
-        setBuses(filterBySchedule(available));
+        setBuses(annotateBuses(res.buses));
       }
       setFetching(false);
     };
@@ -126,6 +151,8 @@ export default function Route() {
                 key={bus.id}
                 bus={bus}
                 selected={bus.id === selectedBusId}
+                disabled={bus.disabled}
+                reason={bus.reason}
                 onPress={() => setSelectedBusId(bus.id)}
               />
             ))
