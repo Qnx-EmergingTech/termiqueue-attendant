@@ -2,11 +2,19 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { Menu, Provider as PaperProvider } from "react-native-paper";
-import { getMyBus } from "../../api/buses";
 import { signOutAccount } from "../../api/auth";
+import { getMyBus } from "../../api/buses";
 import LogoutModal from "../logoutModal";
 
 // Module-level cache — survives remounts from router.replace
@@ -15,21 +23,31 @@ let _cachedRegion = null;
 
 const mapBusStatusToTripStatus = (busStatus) => {
   switch (busStatus) {
-    case "available": return "idle";
-    case "active":    return "active";
-    case "arrived":   return "arrived";
-    case "in_transit":return "ongoing";
-    default:          return "idle";
+    case "available":
+      return "idle";
+    case "active":
+      return "active";
+    case "arrived":
+      return "arrived";
+    case "in_transit":
+      return "ongoing";
+    default:
+      return "idle";
   }
 };
 
 const getActionLabel = (status) => {
   switch (status) {
-    case "idle":    return "Set Active Status";
-    case "active":  return "Update Status";
-    case "arrived": return "Start Your Trip";
-    case "ongoing": return "Finish Trip";
-    default:        return "Set Active Status";
+    case "idle":
+      return "Set Active Status";
+    case "active":
+      return "Update Status";
+    case "arrived":
+      return "Start Your Trip";
+    case "ongoing":
+      return "Finish Trip";
+    default:
+      return "Set Active Status";
   }
 };
 
@@ -41,11 +59,15 @@ export default function Home() {
   const regionSet = useRef(!!_cachedRegion);
   const [locationDenied, setLocationDenied] = useState(false);
 
-  const initialStatus = _cachedBus ? mapBusStatusToTripStatus(_cachedBus.status) : "idle";
+  const initialStatus = _cachedBus
+    ? mapBusStatusToTripStatus(_cachedBus.status)
+    : "idle";
   const [myBus, setMyBus] = useState(_cachedBus);
   const [isFetchingBus, setIsFetchingBus] = useState(!_cachedBus);
   const [tripStatus, setTripStatus] = useState(initialStatus);
-  const [actionButtonLabel, setActionButtonLabel] = useState(getActionLabel(initialStatus));
+  const [actionButtonLabel, setActionButtonLabel] = useState(
+    getActionLabel(initialStatus),
+  );
 
   const closeMenu = () => setMenuVisible(false);
   const toggleMenu = () => setMenuVisible((prev) => !prev);
@@ -83,7 +105,7 @@ export default function Home() {
               },
             },
           ],
-          { cancelable: false }
+          { cancelable: false },
         );
       } else {
         _cachedBus = null;
@@ -95,7 +117,7 @@ export default function Home() {
             [
               { text: "Not Now", style: "cancel" },
               { text: "Claim a Shuttle", onPress: () => router.push("/route") },
-            ]
+            ],
           );
         }
       }
@@ -189,7 +211,9 @@ export default function Home() {
               }}
             />
             <Menu.Item
-              disabled={myBus && (tripStatus === "arrived" || tripStatus === "ongoing")}
+              disabled={
+                myBus && (tripStatus === "arrived" || tripStatus === "ongoing")
+              }
               onPress={() => {
                 closeMenu();
                 if (!myBus) {
@@ -212,7 +236,8 @@ export default function Home() {
                   name="swap-horizontal-outline"
                   size={24}
                   color={
-                    myBus && (tripStatus === "arrived" || tripStatus === "ongoing")
+                    myBus &&
+                    (tripStatus === "arrived" || tripStatus === "ongoing")
                       ? "#A1A4B2"
                       : "#020eba"
                   }
@@ -222,7 +247,8 @@ export default function Home() {
                 fontFamily: "Roboto_500Medium",
                 fontSize: 16,
                 color:
-                  myBus && (tripStatus === "arrived" || tripStatus === "ongoing")
+                  myBus &&
+                  (tripStatus === "arrived" || tripStatus === "ongoing")
                     ? "#A1A4B2"
                     : "#333",
               }}
@@ -262,7 +288,7 @@ export default function Home() {
           </View>
         ) : region ? (
           <MapView
-            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : null}
+            provider={Platform.OS === "android" ? PROVIDER_GOOGLE : null}
             style={styles.map}
             region={region}
             showsUserLocation
@@ -273,7 +299,7 @@ export default function Home() {
         <View style={styles.info}>
           {myBus ? (
             <>
-              <Text style={styles.bus}>
+              <Text style={styles.bus} numberOfLines={1} ellipsizeMode="tail">
                 {myBus.bus_name}, {myBus.bus_number}
               </Text>
               <Text style={styles.destination}>{myBus.origin}</Text>
@@ -319,7 +345,10 @@ export default function Home() {
           ) : (
             <Pressable
               disabled={isButtonDisabled}
-              style={[styles.activeButton, isButtonDisabled && { opacity: 0.5 }]}
+              style={[
+                styles.activeButton,
+                isButtonDisabled && { opacity: 0.5 },
+              ]}
               onPress={() => {
                 if (actionButtonLabel === "Set Active Status") {
                   router.push("/activeModal");
