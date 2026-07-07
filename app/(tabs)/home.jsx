@@ -5,11 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { Menu, Provider as PaperProvider } from "react-native-paper";
@@ -288,7 +287,7 @@ export default function Home() {
           </View>
         ) : region ? (
           <MapView
-            provider={Platform.OS === "android" ? PROVIDER_GOOGLE : null}
+            provider={PROVIDER_GOOGLE}
             style={styles.map}
             region={region}
             showsUserLocation
