@@ -298,7 +298,7 @@ export default function Home() {
         <View style={styles.info}>
           {myBus ? (
             <>
-              <Text style={styles.bus}>
+              <Text style={styles.bus} numberOfLines={1} ellipsizeMode="tail">
                 {myBus.bus_name}, {myBus.bus_number}
               </Text>
               <Text style={styles.destination}>{myBus.origin}</Text>

@@ -18,17 +18,25 @@ import {
   getTripState,
 } from "../../utils/authStorage";
 
+const TRIP_STATUS_CHECK_INTERVAL_MS = 4000;
+const WS_RECONNECT_BASE_DELAY_MS = 2000;
+const WS_RECONNECT_MAX_DELAY_MS = 30000;
+const POLL_BASE_INTERVAL_MS = 10000;
+const POLL_MAX_INTERVAL_MS = 60000;
+const WS_DEGRADED_ALERT_MS = 60000;
+
 const Passenger = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("queue");
   const [passengers, setPassengers] = useState([]);
   const [capacity, setCapacity] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [connectionDegraded, setConnectionDegraded] = useState(false);
+  const [tripStatus, setTripStatus] = useState("idle");
 
   const authExpiredRef = useRef(false);
-  const stopPollingRef = useRef(() => {});
-  const closeWsRef = useRef(() => {});
+  const teardownConnectionRef = useRef(() => {});
 
   const getWsBaseUrl = () => {
     const base = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -36,50 +44,122 @@ const Passenger = () => {
   };
 
   useEffect(() => {
-    fetchPassengers();
-  }, []);
-
-  useEffect(() => {
-    let ws;
+    let ws = null;
     let isActive = true;
-    let pollInterval = null;
+    let tracking = false;
+    let pollTimeout = null;
+    let reconnectTimeout = null;
+    let tripStatusInterval = null;
+    let pollDelay = POLL_BASE_INTERVAL_MS;
+    let reconnectDelay = WS_RECONNECT_BASE_DELAY_MS;
+    let wsDegradedSince = null;
+    let hasAlerted = false;
 
-    const startPolling = () => {
-      if (pollInterval || authExpiredRef.current) return;
-
-      pollInterval = setInterval(() => {
-        if (authExpiredRef.current) return;
-        fetchPassengers();
-      }, 5000);
-    };
-
-    const stopPolling = () => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        pollInterval = null;
+    const clearPollTimeout = () => {
+      if (pollTimeout) {
+        clearTimeout(pollTimeout);
+        pollTimeout = null;
       }
     };
 
-    stopPollingRef.current = stopPolling;
-    closeWsRef.current = () => ws?.close();
+    const clearReconnectTimeout = () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
+    };
 
-    const connectWS = async () => {
+    const stopPolling = () => clearPollTimeout();
+
+    const checkDegradedAlert = () => {
+      if (
+        wsDegradedSince &&
+        !hasAlerted &&
+        Date.now() - wsDegradedSince > WS_DEGRADED_ALERT_MS
+      ) {
+        hasAlerted = true;
+        setConnectionDegraded(true);
+      }
+    };
+
+    const noteWsDown = () => {
+      if (!wsDegradedSince) wsDegradedSince = Date.now();
+      checkDegradedAlert();
+    };
+
+    const markWsHealthy = () => {
+      wsDegradedSince = null;
+      hasAlerted = false;
+      reconnectDelay = WS_RECONNECT_BASE_DELAY_MS;
+      pollDelay = POLL_BASE_INTERVAL_MS;
+      setConnectionDegraded(false);
+    };
+
+    const scheduleNextPoll = (delay) => {
+      clearPollTimeout();
+      if (!isActive || authExpiredRef.current || !tracking) return;
+      pollTimeout = setTimeout(pollTick, delay);
+    };
+
+    const pollTick = async () => {
+      if (!isActive || authExpiredRef.current || !tracking) return;
+
+      const ok = await fetchPassengers();
+      pollDelay = ok
+        ? POLL_BASE_INTERVAL_MS
+        : Math.min(pollDelay * 2, POLL_MAX_INTERVAL_MS);
+
+      checkDegradedAlert();
+      maybeConnectWS();
+      scheduleNextPoll(pollDelay);
+    };
+
+    const startPolling = () => {
+      if (pollTimeout || authExpiredRef.current || !tracking) return;
+      scheduleNextPoll(pollDelay);
+    };
+
+    const scheduleReconnect = () => {
+      if (!isActive || authExpiredRef.current || !tracking) return;
+      clearReconnectTimeout();
+      reconnectTimeout = setTimeout(() => {
+        reconnectTimeout = null;
+        reconnectDelay = Math.min(
+          reconnectDelay * 2,
+          WS_RECONNECT_MAX_DELAY_MS,
+        );
+        maybeConnectWS(true);
+      }, reconnectDelay);
+    };
+
+    const maybeConnectWS = async (forceAttempt = false) => {
+      if (!isActive || authExpiredRef.current || !tracking) return;
+      if (
+        ws &&
+        (ws.readyState === WebSocket.OPEN ||
+          ws.readyState === WebSocket.CONNECTING)
+      ) {
+        return;
+      }
+      if (reconnectTimeout && !forceAttempt) return;
+
+      const queueId = await getQueueId();
+
+      if (!queueId) {
+        startPolling();
+        return;
+      }
+
       try {
-        const tripStatus = await getTripState();
-        const queueId = await getQueueId();
-
-        if (tripStatus !== "arrived" || !queueId) {
-          startPolling();
-          return;
-        }
-
         const wsBaseUrl = getWsBaseUrl();
         const wsUrl = `${wsBaseUrl}/queues/ws/queues/${queueId}`;
 
         ws = new WebSocket(wsUrl);
-        closeWsRef.current = () => ws?.close();
 
         ws.onopen = () => {
+          if (!isActive) return;
+          markWsHealthy();
+          clearReconnectTimeout();
           stopPolling();
           fetchPassengers();
         };
@@ -96,24 +176,100 @@ const Passenger = () => {
           }
         };
 
-        ws.onerror = (e) => {
-          if (!authExpiredRef.current) startPolling();
+        ws.onerror = () => {
+          if (!isActive || authExpiredRef.current || !tracking) return;
+          noteWsDown();
+          startPolling();
         };
 
-        ws.onclose = (e) => {
-          if (!authExpiredRef.current) startPolling();
+        ws.onclose = () => {
+          if (!isActive || authExpiredRef.current || !tracking) return;
+          noteWsDown();
+          startPolling();
+          scheduleReconnect();
         };
-      } catch (err) {
+      } catch {
+        noteWsDown();
         startPolling();
+        scheduleReconnect();
       }
     };
 
-    connectWS();
+    const stopTracking = () => {
+      if (!tracking) return;
+      tracking = false;
+      clearPollTimeout();
+      clearReconnectTimeout();
+      wsDegradedSince = null;
+      hasAlerted = false;
+      pollDelay = POLL_BASE_INTERVAL_MS;
+      reconnectDelay = WS_RECONNECT_BASE_DELAY_MS;
+      setConnectionDegraded(false);
+      ws?.close();
+      ws = null;
+    };
+
+    const startTracking = () => {
+      if (tracking) return;
+      tracking = true;
+      fetchPassengers();
+      maybeConnectWS();
+      startPolling();
+    };
+
+    // "arrived": live WS/POLL tracking, the list can still change.
+    // "ongoing": boarding closed, list is final — fetch it exactly once
+    // (covers both "just departed" and "app opened mid-trip"), then leave
+    // it alone. No poll, no WS, no repeat fetches for the rest of the trip.
+    // "idle"/"active": no queue exists yet — nothing to show, clear it.
+    let ongoingSnapshotFetched = false;
+
+    const applyTripStatus = (status) => {
+      if (status === "arrived") {
+        ongoingSnapshotFetched = false;
+        startTracking();
+        return;
+      }
+
+      stopTracking();
+
+      if (status === "ongoing") {
+        if (!ongoingSnapshotFetched) {
+          ongoingSnapshotFetched = true;
+          fetchPassengers();
+        }
+        return;
+      }
+
+      ongoingSnapshotFetched = false;
+      setPassengers([]);
+      setCapacity(0);
+    };
+
+    const checkTripStatus = async () => {
+      if (!isActive || authExpiredRef.current) return;
+      const { tripStatus: status } = await getTripState();
+      setTripStatus(status);
+      applyTripStatus(status);
+    };
+
+    teardownConnectionRef.current = () => {
+      stopTracking();
+      if (tripStatusInterval) clearInterval(tripStatusInterval);
+    };
+
+    checkTripStatus();
+    tripStatusInterval = setInterval(
+      checkTripStatus,
+      TRIP_STATUS_CHECK_INTERVAL_MS,
+    );
 
     return () => {
       isActive = false;
+      if (tripStatusInterval) clearInterval(tripStatusInterval);
+      clearPollTimeout();
+      clearReconnectTimeout();
       ws?.close();
-      stopPolling();
     };
   }, []);
 
@@ -121,8 +277,7 @@ const Passenger = () => {
     if (authExpiredRef.current) return;
     authExpiredRef.current = true;
 
-    stopPollingRef.current();
-    closeWsRef.current();
+    teardownConnectionRef.current();
 
     await signOutAccount();
 
@@ -162,7 +317,7 @@ const Passenger = () => {
     if (authExpiredRef.current) {
       setLoading(false);
       setRefreshing(false);
-      return;
+      return false;
     }
 
     try {
@@ -171,13 +326,19 @@ const Passenger = () => {
 
       if (result.authError) {
         handleSessionExpired();
-        return;
+        return false;
+      }
+
+      if (!result.success) {
+        return false;
       }
 
       setPassengers(result.passengers);
       setCapacity(result.capacity);
+      return true;
     } catch (error) {
       console.error("Failed to fetch passengers:", error);
+      return false;
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -264,6 +425,12 @@ const Passenger = () => {
     <View style={styles.container}>
       <Text style={styles.header}>Passenger List</Text>
 
+      {connectionDegraded && (
+        <Text style={styles.degradedBanner}>
+          Live updates unavailable — refreshing periodically
+        </Text>
+      )}
+
       {/* Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
@@ -313,9 +480,11 @@ const Passenger = () => {
                 ? "Refreshing..."
                 : loading
                   ? "Loading passengers..."
-                  : activeTab === "queue"
-                    ? "No Queued Passengers"
-                    : "No Boarded Passengers"}
+                  : tripStatus === "idle" || tripStatus === "active"
+                    ? "\t\t\t\tPassenger unavailable;\nUpdate status to Arrived to view."
+                    : activeTab === "queue"
+                      ? "No Queued Passengers"
+                      : "No Boarded Passengers"}
             </Text>
           </View>
         }
@@ -360,6 +529,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 20,
+  },
+
+  degradedBanner: {
+    fontSize: 12,
+    color: "#F5A623",
+    marginTop: -12,
+    marginBottom: 12,
   },
 
   tabs: {
