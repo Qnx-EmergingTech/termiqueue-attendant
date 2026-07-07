@@ -481,7 +481,7 @@ const Passenger = () => {
                 : loading
                   ? "Loading passengers..."
                   : tripStatus === "idle" || tripStatus === "active"
-                    ? "\t\t\t\tPassenger unavailable;\nUpdate status to Arrived to view."
+                    ? "Passenger unavailable;\nUpdate status to Arrived to view."
                     : activeTab === "queue"
                       ? "No Queued Passengers"
                       : "No Boarded Passengers"}
@@ -661,5 +661,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#8C8C8C",
     fontWeight: "500",
+    textAlign: "center",
   },
 });
