@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   FlatList,
   Image,
   StyleSheet,
@@ -7,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { signOutAccount } from "../../api/auth";
 import { getAttendantPassengers } from "../../api/buses";
 import {
   clearQueueId,
@@ -16,11 +19,16 @@ import {
 } from "../../utils/authStorage";
 
 const Passenger = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("queue");
   const [passengers, setPassengers] = useState([]);
   const [capacity, setCapacity] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const authExpiredRef = useRef(false);
+  const stopPollingRef = useRef(() => {});
+  const closeWsRef = useRef(() => {});
 
   const getWsBaseUrl = () => {
     const base = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -37,9 +45,10 @@ const Passenger = () => {
     let pollInterval = null;
 
     const startPolling = () => {
-      if (pollInterval) return;
+      if (pollInterval || authExpiredRef.current) return;
 
       pollInterval = setInterval(() => {
+        if (authExpiredRef.current) return;
         fetchPassengers();
       }, 5000);
     };
@@ -50,6 +59,9 @@ const Passenger = () => {
         pollInterval = null;
       }
     };
+
+    stopPollingRef.current = stopPolling;
+    closeWsRef.current = () => ws?.close();
 
     const connectWS = async () => {
       try {
@@ -65,6 +77,7 @@ const Passenger = () => {
         const wsUrl = `${wsBaseUrl}/queues/ws/queues/${queueId}`;
 
         ws = new WebSocket(wsUrl);
+        closeWsRef.current = () => ws?.close();
 
         ws.onopen = () => {
           stopPolling();
@@ -84,11 +97,11 @@ const Passenger = () => {
         };
 
         ws.onerror = (e) => {
-          startPolling();
+          if (!authExpiredRef.current) startPolling();
         };
 
         ws.onclose = (e) => {
-          startPolling();
+          if (!authExpiredRef.current) startPolling();
         };
       } catch (err) {
         startPolling();
@@ -103,6 +116,28 @@ const Passenger = () => {
       stopPolling();
     };
   }, []);
+
+  const handleSessionExpired = async () => {
+    if (authExpiredRef.current) return;
+    authExpiredRef.current = true;
+
+    stopPollingRef.current();
+    closeWsRef.current();
+
+    await signOutAccount();
+
+    Alert.alert(
+      "Session expired",
+      "Please log in again to continue.",
+      [
+        {
+          text: "OK",
+          onPress: () => router.replace("/login"),
+        },
+      ],
+      { cancelable: false },
+    );
+  };
 
   const applyQueueEvent = (passengers, event) => {
     switch (event.type) {
@@ -124,9 +159,20 @@ const Passenger = () => {
   };
 
   const fetchPassengers = async () => {
+    if (authExpiredRef.current) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const result = await getAttendantPassengers();
+
+      if (result.authError) {
+        handleSessionExpired();
+        return;
+      }
 
       setPassengers(result.passengers);
       setCapacity(result.capacity);

@@ -5,19 +5,50 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const joinUrl = (base, path) =>
   `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 
-export const getMyBus = async () => {
-  try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
+const fetchWithAuth = async (url, options = {}) => {
+  const idToken = await getToken();
+  if (!idToken) {
+    const authFailure = new Error("User not authenticated");
+    authFailure.authError = true;
+    throw authFailure;
+  }
 
-    const url = joinUrl(API_BASE_URL, "buses/attendant/my-bus");
-
-    const response = await fetch(url, {
-      method: "GET",
+  const doFetch = (token) =>
+    fetch(url, {
+      ...options,
       headers: {
-        Authorization: `Bearer ${idToken}`,
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
       },
     });
+
+  let response = await doFetch(idToken);
+
+  if (response.status === 401) {
+    const refreshedToken = await getToken(true);
+    if (!refreshedToken) {
+      const authFailure = new Error("Session expired. Please log in again.");
+      authFailure.authError = true;
+      throw authFailure;
+    }
+
+    response = await doFetch(refreshedToken);
+
+    if (response.status === 401) {
+      const authFailure = new Error("Session expired. Please log in again.");
+      authFailure.authError = true;
+      throw authFailure;
+    }
+  }
+
+  return response;
+};
+
+export const getMyBus = async () => {
+  try {
+    const url = joinUrl(API_BASE_URL, "buses/attendant/my-bus");
+
+    const response = await fetchWithAuth(url, { method: "GET" });
 
     const data = await response.json();
     if (!response.ok) {
@@ -27,22 +58,23 @@ export const getMyBus = async () => {
     return { success: true, bus: data };
   } catch (error) {
     console.error("Error fetching my bus:", error);
-    return { success: false, message: error.message, bus: null };
+    return {
+      success: false,
+      message: error.message,
+      bus: null,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const createBus = async (busData) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
-
     const url = joinUrl(API_BASE_URL, "buses/");
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify(busData),
     });
@@ -57,21 +89,21 @@ export const createBus = async (busData) => {
 
     return { success: true, message: "Bus created successfully!", bus: data };
   } catch (error) {
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const claimBus = async (busId) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
-
     const url = joinUrl(API_BASE_URL, `buses/${busId}/claim`);
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${idToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -87,24 +119,21 @@ export const claimBus = async (busId) => {
 
     return { success: true, message: "Bus claimed successfully!", bus: data };
   } catch (error) {
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const arriveBus = async (busId) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/arrive`);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    });
+    const response = await fetchWithAuth(url, { method: "POST" });
 
     const data = await response.json();
 
@@ -125,24 +154,18 @@ export const arriveBus = async (busId) => {
     return {
       success: false,
       message: error.message,
+      authError: !!error.authError,
     };
   }
 };
 
 export const departBus = async (busId) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/depart`);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    });
+    const response = await fetchWithAuth(url, { method: "POST" });
 
     const data = await response.json();
 
@@ -160,22 +183,23 @@ export const departBus = async (busId) => {
     };
   } catch (error) {
     console.error("Depart bus error:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const updateBusStatus = async (busId, status) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}`);
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "PUT",
       headers: {
-        Authorization: `Bearer ${idToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -195,21 +219,21 @@ export const updateBusStatus = async (busId, status) => {
     return { success: true, bus: data };
   } catch (error) {
     console.error("Update bus error:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const getAttendantPassengers = async () => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
-
     const url = joinUrl(API_BASE_URL, "buses/attendant/passengers");
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${idToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -234,21 +258,18 @@ export const getAttendantPassengers = async () => {
       passengers: [],
       capacity: 0,
       lastPassengerScanned: null,
+      authError: !!error.authError,
     };
   }
 };
 
 export const getQueues = async () => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
-
     const url = joinUrl(API_BASE_URL, "queues/");
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${idToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -262,23 +283,20 @@ export const getQueues = async () => {
     return { success: true, queues: data };
   } catch (error) {
     console.error("Get queues error:", error);
-    return { success: false, queues: [] };
+    return { success: false, queues: [], authError: !!error.authError };
   }
 };
 
 export const scanQr = async (busId, qrJson) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/scan-qr`);
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify({ qr_json: qrJson }),
     });
@@ -293,24 +311,21 @@ export const scanQr = async (busId, qrJson) => {
     return { success: true, data };
   } catch (error) {
     console.error("scanQr API error:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const addWalkInPassenger = async (busId) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/manual-add`);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    });
+    const response = await fetchWithAuth(url, { method: "POST" });
 
     const data = await response.json();
 
@@ -326,23 +341,24 @@ export const addWalkInPassenger = async (busId) => {
     };
   } catch (error) {
     console.error("Add walk-in passenger error:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const addPrivilegedPassenger = async (busId, force = false) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/manual-add/privileged`);
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify({ force }),
     });
@@ -364,23 +380,19 @@ export const addPrivilegedPassenger = async (busId, force = false) => {
     };
   } catch (error) {
     console.error("Add privileged passenger error:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const getAllBuses = async () => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
-
     const url = joinUrl(API_BASE_URL, "buses/");
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    });
+    const response = await fetchWithAuth(url, { method: "GET" });
 
     const data = await response.json();
 
@@ -390,24 +402,22 @@ export const getAllBuses = async () => {
 
     return { success: true, buses: data };
   } catch (error) {
-    return { success: false, buses: [], message: error.message };
+    return {
+      success: false,
+      buses: [],
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const finishTrip = async (busId) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/finish-trip`);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    });
+    const response = await fetchWithAuth(url, { method: "POST" });
 
     const data = await response.json();
 
@@ -421,24 +431,21 @@ export const finishTrip = async (busId) => {
     return { success: true, bus: data };
   } catch (error) {
     console.error("Finish trip error:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const releaseBus = async (busId) => {
   try {
-    const idToken = await getToken();
-    if (!idToken) throw new Error("User not authenticated");
     if (!busId) throw new Error("Bus ID is required");
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/release`);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    });
+    const response = await fetchWithAuth(url, { method: "POST" });
 
     const data = await response.json();
 
@@ -449,6 +456,10 @@ export const releaseBus = async (busId) => {
 
     return { success: true, data };
   } catch (error) {
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };

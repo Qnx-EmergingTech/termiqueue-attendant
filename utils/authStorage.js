@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAuth, signOut } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 const TOKEN_KEY = "firebaseIdToken";
 const USER_KEY = "userData";
@@ -15,10 +16,17 @@ export const setToken = async (token) => {
   }
 };
 
-export const getToken = async () => {
+export const getToken = async (forceRefresh = false) => {
   try {
-    const token = await AsyncStorage.getItem(TOKEN_KEY);
-    return token;
+    const user = auth.currentUser;
+
+    if (user) {
+      const freshToken = await user.getIdToken(forceRefresh);
+      await AsyncStorage.setItem(TOKEN_KEY, freshToken);
+      return freshToken;
+    }
+
+    return await AsyncStorage.getItem(TOKEN_KEY);
   } catch (error) {
     console.error("Error retrieving token:", error);
     return null;
