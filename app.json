@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "QNext Attendant",
-    "slug": "qnext-attendant",
-    "owner": "qnxdev",
+    "name": "termiQAttendant",
+    "slug": "termiQAttendant",
+    "owner": "et-team",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/qnextlogo.png",
@@ -11,7 +11,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.qymera.qnextattendant",
+      "bundleIdentifier": "com.questronix.qnextattendant",
       "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
         "googleMapsApiKey": "AIzaSyCCqG1urGsVMYo1yP6hKHKl0zEeNUKAvtw"
@@ -29,7 +29,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.qymera.qnextattendant",
+      "package": "com.questronix.qnextattendant",
       "permissions": [
         "android.permission.CAMERA"
       ]
@@ -62,7 +62,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "964573e2-cd5e-4a66-bb3b-071ebaca0812"
+        "projectId": "34579200-49d8-400c-aee2-6770a12dc532"
       }
     }
   }

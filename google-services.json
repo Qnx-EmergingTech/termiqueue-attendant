@@ -1,79 +1,51 @@
 {
   "project_info": {
-    "project_number": "565011913202",
-    "project_id": "qnext-qnx",
-    "storage_bucket": "qnext-qnx.firebasestorage.app"
+    "project_number": "655635157366",
+    "project_id": "qnext-bc282",
+    "storage_bucket": "qnext-bc282.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:565011913202:android:d6ee61aeb3b06b050f736b",
+        "mobilesdk_app_id": "1:655635157366:android:cc93be04abbacd93c0aa57",
         "android_client_info": {
-          "package_name": "com.qymera.qnext"
+          "package_name": "com.questronix.qnext"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "565011913202-j6ppm2hbnmtn1h59hh914h4p4flcej93.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCY6yZikXW0650c4ass41sopcRukjejqFY"
+          "current_key": "AIzaSyCSq-dwmOEMZbXnKxXxU2ch-w2Gm7dDaiA"
+        },
+        {
+          "current_key": "AIzaSyDS43DzJVWGpaHqX6Ln2DFcoMfeBmX7axs"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "565011913202-j6ppm2hbnmtn1h59hh914h4p4flcej93.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "565011913202-h1o94cj05rlkl8tpujp004ouhqdqh423.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.qymera.qnextattendant"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:565011913202:android:0359e3db1df1634a0f736b",
+        "mobilesdk_app_id": "1:655635157366:android:fd95c12d6b38bed0c0aa57",
         "android_client_info": {
-          "package_name": "com.qymera.qnextattendant"
+          "package_name": "com.questronix.qnextattendant"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "565011913202-j6ppm2hbnmtn1h59hh914h4p4flcej93.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCY6yZikXW0650c4ass41sopcRukjejqFY"
+          "current_key": "AIzaSyCSq-dwmOEMZbXnKxXxU2ch-w2Gm7dDaiA"
+        },
+        {
+          "current_key": "AIzaSyDS43DzJVWGpaHqX6Ln2DFcoMfeBmX7axs"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "565011913202-j6ppm2hbnmtn1h59hh914h4p4flcej93.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "565011913202-h1o94cj05rlkl8tpujp004ouhqdqh423.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.qymera.qnextattendant"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

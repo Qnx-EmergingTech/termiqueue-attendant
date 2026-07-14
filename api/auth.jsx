@@ -111,7 +111,7 @@ export const logInWithUsername = async (identifier, password) => {
     await AsyncStorage.setItem("userId", user.uid);
     await AsyncStorage.setItem("isLoggedIn", "true");
 
-    return { success: true };
+    return { success: true, idToken };
   } catch (err) {
     console.error("Login error:", err);
     return {
