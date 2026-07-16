@@ -5,16 +5,23 @@ import {
   Roboto_700Bold,
 } from "@expo-google-fonts/roboto";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 // remove safescreen for top white space, temporary solution?
 import SafeScreen from "../components/SafeScreen";
+import {
+  setupBackgroundNotificationHandler,
+  setupForegroundNotificationHandler,
+  setupNotificationOpenHandler,
+} from "../utils/pushNotifications";
 
 SplashScreen.preventAutoHideAsync();
+setupBackgroundNotificationHandler();
 
 export default function AppLayout() {
+  const router = useRouter();
   const [fontsLoaded] = useFonts({
     Roboto_300Light,
     Roboto_400Regular,
@@ -27,6 +34,24 @@ export default function AppLayout() {
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    const unsubscribeForeground = setupForegroundNotificationHandler();
+
+    setupNotificationOpenHandler((remoteMessage) => {
+      const { type, bus_id } = remoteMessage.data || {};
+
+      if (type === "prompt_finish_trip") {
+        router.push({ pathname: "/finishModal", params: { busId: bus_id } });
+      } else if (type === "end_trip") {
+        router.push("/(tabs)/home");
+      }
+    });
+
+    return () => {
+      unsubscribeForeground();
+    };
+  }, [router]);
 
   if (!fontsLoaded) return null;
 

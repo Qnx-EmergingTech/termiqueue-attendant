@@ -70,6 +70,8 @@ export function setupForegroundNotificationHandler() {
     console.log(
       '📬 [FOREGROUND] Notification:',
       remoteMessage.notification?.title,
+      'type:',
+      remoteMessage.data?.type,
     );
 
     Alert.alert(

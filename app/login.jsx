@@ -15,8 +15,6 @@ import {
   registerForPushNotificationsAsync,
   sendTokenToServer,
 } from '../utils/pushNotifications';
-import { getIdToken, signInWithEmailAndPassword  } from "firebase/auth";
-import { auth } from "../firebaseConfig";
 
 export default function Login() {
   const router = useRouter();
@@ -44,6 +42,7 @@ export default function Login() {
       try {
         if (token) {
           console.log('Token: ', token);
+          console.log('Result: ', result);
           console.log('idToken: ', result.idToken);
           await sendTokenToServer(token, result.idToken);
         }
