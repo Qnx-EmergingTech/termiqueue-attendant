@@ -1,7 +1,8 @@
+import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { departBus, getAttendantPassengers } from "../api/buses";
+import { departBus, getAttendantPassengers, updateBusLocation } from "../api/buses";
 import CustomizableModal from "../app/common/commonModal";
 import { setTripState } from "../utils/authStorage";
 
@@ -50,6 +51,16 @@ export default function StartModal() {
 
     if (result.success) {
       await setTripState("ongoing", "Finish Trip");
+
+      try {
+        const { coords } = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Highest,
+        });
+        await updateBusLocation(busId, coords.latitude, coords.longitude);
+      } catch (err) {
+        console.error("Initial location ping after depart failed:", err);
+      }
+
       setVisible(false);
       router.replace("/(tabs)/home");
     } else {
