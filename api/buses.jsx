@@ -44,6 +44,37 @@ const fetchWithAuth = async (url, options = {}) => {
   return response;
 };
 
+export const updateBusLocation = async (busId, lat, lon) => {
+  try {
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/location`);
+
+    const response = await fetchWithAuth(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ lat, lon }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || "Failed to update bus location");
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Update bus location error:", error);
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
+  }
+};
+
 export const getMyBus = async () => {
   try {
     const url = joinUrl(API_BASE_URL, "buses/attendant/my-bus");

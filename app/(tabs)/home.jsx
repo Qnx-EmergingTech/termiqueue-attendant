@@ -13,7 +13,7 @@ import {
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { Menu, Provider as PaperProvider } from "react-native-paper";
 import { signOutAccount } from "../../api/auth";
-import { getMyBus } from "../../api/buses";
+import { getMyBus, updateBusLocation } from "../../api/buses";
 import LogoutModal from "../logoutModal";
 
 // Module-level cache — survives remounts from router.replace
@@ -67,6 +67,11 @@ export default function Home() {
   const [actionButtonLabel, setActionButtonLabel] = useState(
     getActionLabel(initialStatus),
   );
+  const myBusRef = useRef(_cachedBus);
+
+  useEffect(() => {
+    myBusRef.current = myBus;
+  }, [myBus]);
 
   const closeMenu = () => setMenuVisible(false);
   const toggleMenu = () => setMenuVisible((prev) => !prev);
@@ -137,15 +142,21 @@ export default function Home() {
       await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Highest, distanceInterval: 1 },
         (location) => {
+          const { latitude, longitude } = location.coords;
           const r = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
+            latitude,
+            longitude,
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           };
           _cachedRegion = r;
           setRegion(r);
           regionSet.current = true;
+
+          const bus = myBusRef.current;
+          if (bus && (bus.status === "active" || bus.status === "in_transit")) {
+            updateBusLocation(bus.id, latitude, longitude);
+          }
         },
       );
       await fetchMyBus();
