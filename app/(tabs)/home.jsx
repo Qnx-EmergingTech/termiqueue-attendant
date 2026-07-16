@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -48,6 +49,21 @@ const getActionLabel = (status) => {
     default:
       return "Set Active Status";
   }
+};
+
+// While "active": bus is heading to the pickup point, drives the
+// "bus approaching" proximity alert to passengers waiting in queue.
+const trackPickupProximity = (bus, latitude, longitude) => {
+  if (bus?.status !== "active") return;
+  updateBusLocation(bus.id, latitude, longitude);
+};
+
+// While "in_transit": bus is en route to the destination, drives the
+// destination-arrival alert to onboard passengers and the
+// "tap Finish Trip" prompt to the attendant.
+const trackDestinationArrival = (bus, latitude, longitude) => {
+  if (bus?.status !== "in_transit") return;
+  updateBusLocation(bus.id, latitude, longitude);
 };
 
 export default function Home() {
@@ -132,14 +148,22 @@ export default function Home() {
     }
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchMyBus();
+    }, []),
+  );
+
   useEffect(() => {
+    let subscription;
+
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         setLocationDenied(true);
         return;
       }
-      await Location.watchPositionAsync(
+      subscription = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Highest, distanceInterval: 1 },
         (location) => {
           const { latitude, longitude } = location.coords;
@@ -154,13 +178,15 @@ export default function Home() {
           regionSet.current = true;
 
           const bus = myBusRef.current;
-          if (bus && (bus.status === "active" || bus.status === "in_transit")) {
-            updateBusLocation(bus.id, latitude, longitude);
-          }
+          trackPickupProximity(bus, latitude, longitude);
+          trackDestinationArrival(bus, latitude, longitude);
         },
       );
-      await fetchMyBus();
     })();
+
+    return () => {
+      subscription?.remove();
+    };
   }, []);
 
   return (
