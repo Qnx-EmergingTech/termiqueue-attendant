@@ -31,7 +31,15 @@ export default function finishModal() {
         "Trip Complete!",
         "Your trip has been finished. Would you like to claim a new shuttle?",
         [
-          { text: "Not Now", style: "cancel", onPress: () => router.replace("/(tabs)/home") },
+          {
+            text: "Not Now",
+            style: "cancel",
+            onPress: () =>
+              router.replace({
+                pathname: "/(tabs)/home",
+                params: { refresh: Date.now() },
+              }),
+          },
           { text: "Claim a Shuttle", onPress: () => router.replace("/route") },
         ]
       );

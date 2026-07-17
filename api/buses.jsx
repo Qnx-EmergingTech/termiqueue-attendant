@@ -1,14 +1,14 @@
-import { getToken } from "../utils/authStorage";
+import { getToken } from '../utils/authStorage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 const joinUrl = (base, path) =>
-  `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+  `${base.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
 
 const fetchWithAuth = async (url, options = {}) => {
   const idToken = await getToken();
   if (!idToken) {
-    const authFailure = new Error("User not authenticated");
+    const authFailure = new Error('User not authenticated');
     authFailure.authError = true;
     throw authFailure;
   }
@@ -27,7 +27,7 @@ const fetchWithAuth = async (url, options = {}) => {
   if (response.status === 401) {
     const refreshedToken = await getToken(true);
     if (!refreshedToken) {
-      const authFailure = new Error("Session expired. Please log in again.");
+      const authFailure = new Error('Session expired. Please log in again.');
       authFailure.authError = true;
       throw authFailure;
     }
@@ -35,7 +35,7 @@ const fetchWithAuth = async (url, options = {}) => {
     response = await doFetch(refreshedToken);
 
     if (response.status === 401) {
-      const authFailure = new Error("Session expired. Please log in again.");
+      const authFailure = new Error('Session expired. Please log in again.');
       authFailure.authError = true;
       throw authFailure;
     }
@@ -46,14 +46,14 @@ const fetchWithAuth = async (url, options = {}) => {
 
 export const updateBusLocation = async (busId, lat, lon) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/location`);
 
     const response = await fetchWithAuth(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ lat, lon }),
     });
@@ -61,12 +61,12 @@ export const updateBusLocation = async (busId, lat, lon) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.detail || "Failed to update bus location");
+      throw new Error(data.detail || 'Failed to update bus location');
     }
 
     return { success: true, data };
   } catch (error) {
-    console.error("Update bus location error:", error);
+    console.error('Update bus location error:', error);
     return {
       success: false,
       message: error.message,
@@ -77,18 +77,18 @@ export const updateBusLocation = async (busId, lat, lon) => {
 
 export const getMyBus = async () => {
   try {
-    const url = joinUrl(API_BASE_URL, "buses/attendant/my-bus");
+    const url = joinUrl(API_BASE_URL, 'buses/attendant/my-bus');
 
-    const response = await fetchWithAuth(url, { method: "GET" });
+    const response = await fetchWithAuth(url, { method: 'GET' });
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.detail || "Unable to fetch bus info");
+      throw new Error(data.detail || 'Unable to fetch bus info');
     }
 
     return { success: true, bus: data };
   } catch (error) {
-    console.error("Error fetching my bus:", error);
+    console.error('Error fetching my bus:', error);
     return {
       success: false,
       message: error.message,
@@ -100,12 +100,12 @@ export const getMyBus = async () => {
 
 export const createBus = async (busData) => {
   try {
-    const url = joinUrl(API_BASE_URL, "buses/");
+    const url = joinUrl(API_BASE_URL, 'buses/');
 
     const response = await fetchWithAuth(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(busData),
     });
@@ -113,12 +113,12 @@ export const createBus = async (busData) => {
     const data = await response.json();
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
-        : data.detail || "Failed to create bus";
+        ? data.detail.map((d) => d.msg || JSON.stringify(d)).join(', ')
+        : data.detail || 'Failed to create bus';
       throw new Error(msg);
     }
 
-    return { success: true, message: "Bus created successfully!", bus: data };
+    return { success: true, message: 'Bus created successfully!', bus: data };
   } catch (error) {
     return {
       success: false,
@@ -133,22 +133,40 @@ export const claimBus = async (busId) => {
     const url = joinUrl(API_BASE_URL, `buses/${busId}/claim`);
 
     const response = await fetchWithAuth(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
     });
 
     const data = await response.json();
+    console.log('Claimed bus data:', data);
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
-        : data.detail || "Failed to claim bus";
+        ? data.detail.map((d) => d.msg || JSON.stringify(d)).join(', ')
+        : data.detail || 'Failed to claim bus';
       throw new Error(msg);
     }
 
-    return { success: true, message: "Bus claimed successfully!", bus: data };
+    const myBusResult = await getMyBus();
+    if (!myBusResult.success) {
+      return {
+        success: false,
+        message: 'Claimed but failed to fetch bus details',
+      };
+    }
+
+    const queueResult = await createQueue(
+      myBusResult.bus.destination,
+      myBusResult.bus.priority_seat,
+    );
+
+    return {
+      success: true,
+      message: 'Bus claimed successfully!',
+      bus: data,
+      queueId: queueResult.success ? queueResult.queueId : null,
+      queueError: queueResult.success ? null : queueResult.message,
+    };
   } catch (error) {
     return {
       success: false,
@@ -160,18 +178,18 @@ export const claimBus = async (busId) => {
 
 export const arriveBus = async (busId) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/arrive`);
 
-    const response = await fetchWithAuth(url, { method: "POST" });
+    const response = await fetchWithAuth(url, { method: 'POST' });
 
     const data = await response.json();
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map((d) => d.msg).join(", ")
-        : data.detail || "Failed to set bus as arrived";
+        ? data.detail.map((d) => d.msg).join(', ')
+        : data.detail || 'Failed to set bus as arrived';
       throw new Error(msg);
     }
 
@@ -181,7 +199,7 @@ export const arriveBus = async (busId) => {
       message: data.message,
     };
   } catch (error) {
-    console.error("Arrive bus error:", error);
+    console.error('Arrive bus error:', error);
     return {
       success: false,
       message: error.message,
@@ -192,28 +210,28 @@ export const arriveBus = async (busId) => {
 
 export const departBus = async (busId) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/depart`);
 
-    const response = await fetchWithAuth(url, { method: "POST" });
+    const response = await fetchWithAuth(url, { method: 'POST' });
 
     const data = await response.json();
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map((d) => d.msg).join(", ")
-        : data.detail || "Failed to depart bus";
+        ? data.detail.map((d) => d.msg).join(', ')
+        : data.detail || 'Failed to depart bus';
       throw new Error(msg);
     }
 
     return {
       success: true,
-      message: "Bus departed successfully",
+      message: 'Bus departed successfully',
       data,
     };
   } catch (error) {
-    console.error("Depart bus error:", error);
+    console.error('Depart bus error:', error);
     return {
       success: false,
       message: error.message,
@@ -224,14 +242,14 @@ export const departBus = async (busId) => {
 
 export const updateBusStatus = async (busId, status) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}`);
 
     const response = await fetchWithAuth(url, {
-      method: "PUT",
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         status,
@@ -242,14 +260,14 @@ export const updateBusStatus = async (busId, status) => {
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map((d) => d.msg).join(", ")
-        : data.detail || "Failed to update bus";
+        ? data.detail.map((d) => d.msg).join(', ')
+        : data.detail || 'Failed to update bus';
       throw new Error(msg);
     }
 
     return { success: true, bus: data };
   } catch (error) {
-    console.error("Update bus error:", error);
+    console.error('Update bus error:', error);
     return {
       success: false,
       message: error.message,
@@ -260,19 +278,19 @@ export const updateBusStatus = async (busId, status) => {
 
 export const getAttendantPassengers = async () => {
   try {
-    const url = joinUrl(API_BASE_URL, "buses/attendant/passengers");
+    const url = joinUrl(API_BASE_URL, 'buses/attendant/passengers');
 
     const response = await fetchWithAuth(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      const msg = data.detail || "Failed to fetch passengers";
+      const msg = data.detail || 'Failed to fetch passengers';
       throw new Error(msg);
     }
 
@@ -283,7 +301,7 @@ export const getAttendantPassengers = async () => {
       lastPassengerScanned: data.last_passenger_scanned || null,
     };
   } catch (error) {
-    console.error("Passenger API error:", error);
+    console.error('Passenger API error:', error);
     return {
       success: false,
       passengers: [],
@@ -296,38 +314,78 @@ export const getAttendantPassengers = async () => {
 
 export const getQueues = async () => {
   try {
-    const url = joinUrl(API_BASE_URL, "queues/");
+    const url = joinUrl(API_BASE_URL, 'queues/');
 
     const response = await fetchWithAuth(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.detail || "Failed to fetch queues");
+      throw new Error(data.detail || 'Failed to fetch queues');
     }
 
     return { success: true, queues: data };
   } catch (error) {
-    console.error("Get queues error:", error);
+    console.error('Get queues error:', error);
     return { success: false, queues: [], authError: !!error.authError };
+  }
+};
+
+//Create queue
+export const createQueue = async (destination, priority_seat) => {
+  try {
+    if (!destination) throw new Error('Destination is required');
+
+    const url = joinUrl(API_BASE_URL, `queues/`);
+
+    const response = await fetchWithAuth(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        destination,
+        priority_seat,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = data.message || 'Failed to create queue';
+      throw new Error(msg);
+    }
+
+    return {
+      success: true,
+      queueId: data.queue_id,
+      queue: data,
+    };
+  } catch (error) {
+    console.error('Creating queue error:', error);
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
   }
 };
 
 export const scanQr = async (busId, qrJson) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/scan-qr`);
 
     const response = await fetchWithAuth(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ qr_json: qrJson }),
     });
@@ -335,13 +393,13 @@ export const scanQr = async (busId, qrJson) => {
     const data = await response.json();
 
     if (!response.ok) {
-      const msg = data.detail || "Failed to scan QR code";
+      const msg = data.detail || 'Failed to scan QR code';
       throw new Error(msg);
     }
 
     return { success: true, data };
   } catch (error) {
-    console.error("scanQr API error:", error);
+    console.error('scanQr API error:', error);
     return {
       success: false,
       message: error.message,
@@ -352,16 +410,16 @@ export const scanQr = async (busId, qrJson) => {
 
 export const addWalkInPassenger = async (busId) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/manual-add`);
 
-    const response = await fetchWithAuth(url, { method: "POST" });
+    const response = await fetchWithAuth(url, { method: 'POST' });
 
     const data = await response.json();
 
     if (!response.ok) {
-      const msg = data.detail || "Failed to add walk-in passenger";
+      const msg = data.detail || 'Failed to add walk-in passenger';
       throw new Error(msg);
     }
 
@@ -371,7 +429,7 @@ export const addWalkInPassenger = async (busId) => {
       message: data.message,
     };
   } catch (error) {
-    console.error("Add walk-in passenger error:", error);
+    console.error('Add walk-in passenger error:', error);
     return {
       success: false,
       message: error.message,
@@ -382,14 +440,14 @@ export const addWalkInPassenger = async (busId) => {
 
 export const addPrivilegedPassenger = async (busId, force = false) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/manual-add/privileged`);
 
     const response = await fetchWithAuth(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ force }),
     });
@@ -397,7 +455,7 @@ export const addPrivilegedPassenger = async (busId, force = false) => {
     const data = await response.json();
 
     if (!response.ok || !data.success) {
-      const msg = data.message || "Failed to add privileged passenger";
+      const msg = data.message || 'Failed to add privileged passenger';
       throw new Error(msg);
     }
 
@@ -410,7 +468,7 @@ export const addPrivilegedPassenger = async (busId, force = false) => {
       remainingCapacity: data.remaining_capacity,
     };
   } catch (error) {
-    console.error("Add privileged passenger error:", error);
+    console.error('Add privileged passenger error:', error);
     return {
       success: false,
       message: error.message,
@@ -421,14 +479,14 @@ export const addPrivilegedPassenger = async (busId, force = false) => {
 
 export const getAllBuses = async () => {
   try {
-    const url = joinUrl(API_BASE_URL, "buses/");
+    const url = joinUrl(API_BASE_URL, 'buses/');
 
-    const response = await fetchWithAuth(url, { method: "GET" });
+    const response = await fetchWithAuth(url, { method: 'GET' });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.detail || "Failed to fetch buses");
+      throw new Error(data.detail || 'Failed to fetch buses');
     }
 
     return { success: true, buses: data };
@@ -444,24 +502,24 @@ export const getAllBuses = async () => {
 
 export const finishTrip = async (busId) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/finish-trip`);
 
-    const response = await fetchWithAuth(url, { method: "POST" });
+    const response = await fetchWithAuth(url, { method: 'POST' });
 
     const data = await response.json();
 
     if (!response.ok) {
       const msg = Array.isArray(data.detail)
-        ? data.detail.map((d) => d.msg).join(", ")
-        : data.detail || "Failed to finish trip";
+        ? data.detail.map((d) => d.msg).join(', ')
+        : data.detail || 'Failed to finish trip';
       throw new Error(msg);
     }
 
     return { success: true, bus: data };
   } catch (error) {
-    console.error("Finish trip error:", error);
+    console.error('Finish trip error:', error);
     return {
       success: false,
       message: error.message,
@@ -472,16 +530,16 @@ export const finishTrip = async (busId) => {
 
 export const releaseBus = async (busId) => {
   try {
-    if (!busId) throw new Error("Bus ID is required");
+    if (!busId) throw new Error('Bus ID is required');
 
     const url = joinUrl(API_BASE_URL, `buses/${busId}/release`);
 
-    const response = await fetchWithAuth(url, { method: "POST" });
+    const response = await fetchWithAuth(url, { method: 'POST' });
 
     const data = await response.json();
 
     if (!response.ok) {
-      const msg = data.detail || "Failed to release bus";
+      const msg = data.detail || 'Failed to release bus';
       throw new Error(msg);
     }
 
