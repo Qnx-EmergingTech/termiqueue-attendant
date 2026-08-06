@@ -21,6 +21,14 @@ import LogoutModal from "../logoutModal";
 let _cachedBus = null;
 let _cachedRegion = null;
 
+// Lets other screens (e.g. finishModal) stop location tracking immediately
+// on a trip-ending action, without waiting for Home to regain focus —
+// Home stays mounted in the background when navigating away, so its GPS
+// watcher would otherwise keep firing with a stale bus status indefinitely.
+export function clearCachedBus() {
+  _cachedBus = null;
+}
+
 const mapBusStatusToTripStatus = (busStatus) => {
   switch (busStatus) {
     case "available":
@@ -83,12 +91,6 @@ export default function Home() {
   const [actionButtonLabel, setActionButtonLabel] = useState(
     getActionLabel(initialStatus),
   );
-  const myBusRef = useRef(_cachedBus);
-
-  useEffect(() => {
-    myBusRef.current = myBus;
-  }, [myBus]);
-
   const closeMenu = () => setMenuVisible(false);
   const toggleMenu = () => setMenuVisible((prev) => !prev);
   const isButtonDisabled = isFetchingBus || !myBus;
@@ -177,9 +179,8 @@ export default function Home() {
           setRegion(r);
           regionSet.current = true;
 
-          const bus = myBusRef.current;
-          trackPickupProximity(bus, latitude, longitude);
-          trackDestinationArrival(bus, latitude, longitude);
+          trackPickupProximity(_cachedBus, latitude, longitude);
+          trackDestinationArrival(_cachedBus, latitude, longitude);
         },
       );
     })();

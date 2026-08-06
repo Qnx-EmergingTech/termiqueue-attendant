@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import { finishTrip } from "../api/buses";
 import CustomizableModal from "../app/common/commonModal";
+import { clearCachedBus } from "./(tabs)/home";
 import { setLastArrivalTime, setTripState } from "../utils/authStorage";
 
 export default function finishModal() {
@@ -25,6 +26,7 @@ export default function finishModal() {
         await setLastArrivalTime(result.bus.updated_at);
       }
       await setTripState("idle", "Set Active Status");
+      clearCachedBus();
 
       setVisible(false);
       Alert.alert(

@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "termiQAttendant",
-    "slug": "termiQAttendant",
-    "owner": "et-team",
+    "slug": "testing",
+    "owner": "hiki1412s-team",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/qnextlogo.png",
@@ -63,7 +63,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "34579200-49d8-400c-aee2-6770a12dc532"
+        "projectId": "5855034c-9f76-4b18-9159-2b2ea9e31e72"
       }
     }
   }
