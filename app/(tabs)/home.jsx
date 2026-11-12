@@ -9,12 +9,13 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  View
+  View,
+  ScrollView,
 } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { Menu, Provider as PaperProvider } from "react-native-paper";
 import { signOutAccount } from "../../api/auth";
-import { getMyBus, updateBusLocation } from "../../api/buses";
+import { cancelTrip, getMyBus, updateBusLocation } from "../../api/buses";
 import LogoutModal from "../logoutModal";
 
 // Module-level cache — survives remounts from router.replace
@@ -81,7 +82,7 @@ export default function Home() {
   const [region, setRegion] = useState(_cachedRegion);
   const regionSet = useRef(!!_cachedRegion);
   const [locationDenied, setLocationDenied] = useState(false);
-
+  const [isCancelling, setIsCancelling] = useState(false);
   const initialStatus = _cachedBus
     ? mapBusStatusToTripStatus(_cachedBus.status)
     : "idle";
@@ -190,6 +191,40 @@ export default function Home() {
     };
   }, []);
 
+  const handleCancelTrip = async () => {
+    if (!myBus || isCancelling) return;
+  Alert.alert(
+    "Cancel Trip",
+    "Are you sure you want to cancel? You will no longer be active.",
+    [
+      { text: "Keep Trip", style: "cancel" },
+      {
+        text: "Cancel Trip",
+        style: "destructive",
+        onPress: async () => {
+          setIsCancelling(true);
+          try {
+            const result = await cancelTrip(myBus.id);
+            if (result.success) {
+              await fetchMyBus();
+            } else {
+              Alert.alert(
+                "Couldn't cancel trip",
+                result.message || "Please try again.",
+              );
+            }
+          } catch (err) {
+            console.error("Error cancelling trip:", err);
+            Alert.alert("Couldn't cancel trip", "Please try again.");
+          } finally {
+            setIsCancelling(false);
+          }
+        },
+      },
+    ],
+  );
+};
+
   return (
     <PaperProvider>
       <LogoutModal
@@ -197,13 +232,13 @@ export default function Home() {
         onClose={() => setLogoutVisible(false)}
       />
 
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View
           style={{
             flexDirection: "row",
             alignItems: "flex-end",
             justifyContent: "flex-end",
-            marginBottom: 10,
+            marginBottom: 8,
           }}
         >
           <View style={{ flex: 1 }}>
@@ -380,7 +415,8 @@ export default function Home() {
               <Text style={styles.active}>Claim a Shuttle</Text>
             </Pressable>
           ) : (
-            <Pressable
+          <>
+          <Pressable
               disabled={isButtonDisabled}
               style={[
                 styles.activeButton,
@@ -409,9 +445,21 @@ export default function Home() {
             >
               <Text style={styles.active}>{actionButtonLabel}</Text>
             </Pressable>
+
+            {tripStatus === "active" && (
+            <Pressable
+              disabled={isCancelling}
+              style={[styles.cancelButton, isCancelling && { opacity: 0.5 }]}
+              onPress={handleCancelTrip}
+            >
+              <Text style={styles.cancelText}>
+                {isCancelling ? "Cancelling..." : "Cancel Trip"}
+              </Text>
+            </Pressable>
           )}
+          </>)}
         </View>
-      </View>
+      </ScrollView>
     </PaperProvider>
   );
 }
@@ -419,7 +467,6 @@ export default function Home() {
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: "white",
     padding: 20,
   },
@@ -436,7 +483,7 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto_700Bold",
     fontSize: 18,
     color: "white",
-    marginBottom: 5,
+    marginBottom: 2,
   },
   stitle: {
     fontFamily: "Roboto_500Medium",
@@ -454,10 +501,10 @@ const styles = StyleSheet.create({
   },
   map: {
     width: Dimensions.get("window").width * 0.9,
-    height: Dimensions.get("window").height * 0.38,
+    height: Dimensions.get("window").height * 0.34,
     borderRadius: 12,
-    marginTop: 30,
-    marginBottom: 20,
+    marginTop: 16,
+    marginBottom: 16,
   },
   mapDenied: {
     backgroundColor: "#F2F3F7",
@@ -501,12 +548,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 16,
     paddingHorizontal: 24,
-    marginTop: 30,
+    marginTop: 16,
     gap: 4,
   },
   status: {
     fontFamily: "Roboto_700Bold",
-    fontSize: 18,
+    fontSize: 16,
     color: "#3F414E",
   },
   time: {
@@ -519,12 +566,29 @@ const styles = StyleSheet.create({
   },
   bus: {
     fontFamily: "Roboto_700Bold",
-    fontSize: 20,
+    fontSize: 18,
     color: "#020eba",
   },
   destination: {
     fontFamily: "Roboto_500Medium",
     fontSize: 16,
     color: "black",
+  },
+  cancelButton: {
+    backgroundColor: "#DB5461",
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 38,
+    marginTop: 10,
+    width: screenWidth * 0.9,
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  cancelText: {
+    fontFamily: "Roboto_500Medium",
+    fontSize: 14,
+    color: "white",
   },
 });
