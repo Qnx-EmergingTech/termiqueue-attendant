@@ -130,6 +130,9 @@ export default function Home() {
           ],
           { cancelable: false },
         );
+      } else if (!result.notAssigned) {
+        // Network/server hiccup: keep whatever we already show.
+        console.warn("getMyBus failed, keeping current state:", result.message);
       } else {
         _cachedBus = null;
         setMyBus(null);

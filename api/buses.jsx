@@ -81,9 +81,21 @@ export const getMyBus = async () => {
 
     const response = await fetchWithAuth(url, { method: "GET" });
 
-    const data = await response.json();
+    // Read as text first: a proxy/tunnel error page is not JSON.
+    const raw = await response.text();
+    let data = null;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      const err = new Error("Server unavailable. Please try again.");
+      err.transient = true;
+      throw err;
+    }
+
     if (!response.ok) {
-      throw new Error(data.detail || "Unable to fetch bus info");
+      const err = new Error(data?.detail || "Unable to fetch bus info");
+      err.notAssigned = response.status === 404;
+      throw err;
     }
 
     return { success: true, bus: data };
@@ -94,6 +106,7 @@ export const getMyBus = async () => {
       message: error.message,
       bus: null,
       authError: !!error.authError,
+      notAssigned: !!error.notAssigned,
     };
   }
 };

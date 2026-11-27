@@ -44,5 +44,4 @@ app-example
 .env
 eas.json
 
-google-services.json
-GoogleService-Info.plist
+
