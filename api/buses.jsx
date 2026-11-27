@@ -421,17 +421,38 @@ export const addPrivilegedPassenger = async (busId, force = false) => {
 
 export const getAllBuses = async () => {
   try {
-    const url = joinUrl(API_BASE_URL, "buses/");
+    // /buses/ is paginated: { items, next_cursor, has_more }. Follow the
+    // cursor so every bus is returned, not just the first page.
+    const buses = [];
+    let cursor = null;
 
-    const response = await fetchWithAuth(url, { method: "GET" });
+    for (let page = 0; page < 20; page++) {
+      const path = cursor
+        ? `buses/?limit=100&cursor=${encodeURIComponent(cursor)}`
+        : "buses/?limit=100";
+      const response = await fetchWithAuth(joinUrl(API_BASE_URL, path), {
+        method: "GET",
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.detail || "Failed to fetch buses");
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to fetch buses");
+      }
+
+      const items = Array.isArray(data) ? data : data?.items;
+      if (!Array.isArray(items)) {
+        console.error("Unexpected /buses/ response shape:", data);
+        throw new Error("Unexpected response from server.");
+      }
+
+      buses.push(...items);
+
+      if (Array.isArray(data) || !data.has_more || !data.next_cursor) break;
+      cursor = data.next_cursor;
     }
 
-    return { success: true, buses: data };
+    return { success: true, buses };
   } catch (error) {
     return {
       success: false,
