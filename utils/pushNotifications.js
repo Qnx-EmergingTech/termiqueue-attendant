@@ -33,8 +33,8 @@ export async function registerForPushNotificationsAsync() {
 }
 
 // Send token to backend
-export async function sendTokenToServer(token) {
-  if (!token) return null;
+export async function sendTokenToServer(token, idToken) {
+  if (!token || !idToken) return null;
 
   try {
     const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -44,7 +44,7 @@ export async function sendTokenToServer(token) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify({ fcm_token: token }),
     });
