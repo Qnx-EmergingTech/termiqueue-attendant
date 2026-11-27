@@ -33,7 +33,7 @@ export async function registerForPushNotificationsAsync() {
 }
 
 // Send token to backend
-export async function sendTokenToServer(token, userId) {
+export async function sendTokenToServer(token) {
   if (!token) return null;
 
   try {
@@ -44,13 +44,14 @@ export async function sendTokenToServer(token, userId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userId}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ fcm_token: token }),
     });
 
     if (!res.ok) {
-      console.error('Failed to send token');
+      const errorText = await res.text();
+      console.error('Failed to send token:', res.status, errorText);
       return null;
     }
 
