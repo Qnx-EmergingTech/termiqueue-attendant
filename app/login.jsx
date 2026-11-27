@@ -120,7 +120,12 @@ export default function Login() {
               )}
             </Pressable>
 
-            <Text style={styles.fp}>Forgot Password?</Text>
+            <Text
+              style={styles.fp}
+              onPress={() => router.push('/forget-password')}
+            >
+              Forgot Password?
+            </Text>
           </View>
         </View>
 

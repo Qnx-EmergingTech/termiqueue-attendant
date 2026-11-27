@@ -494,3 +494,28 @@ export const releaseBus = async (busId) => {
     };
   }
 };
+
+export const cancelTrip = async (busId) => {
+  try {
+    if (!busId) throw new Error("Bus ID is required");
+
+    const url = joinUrl(API_BASE_URL, `buses/${busId}/cancel-trip`);
+
+    const response = await fetchWithAuth(url, { method: "POST" });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg = data.detail || "Failed to cancel trip";
+      throw new Error(msg);
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+      authError: !!error.authError,
+    };
+  }
+};
