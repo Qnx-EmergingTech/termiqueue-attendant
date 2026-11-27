@@ -419,6 +419,7 @@ export const addPrivilegedPassenger = async (busId, force = false) => {
   }
 };
 
+
 export const getAllBuses = async () => {
   try {
     // /buses/ is paginated: { items, next_cursor, has_more }. Follow the
@@ -452,7 +453,7 @@ export const getAllBuses = async () => {
       cursor = data.next_cursor;
     }
 
-    return { success: true, buses.items ?? [] };
+    return { success: true, buses };
   } catch (error) {
     return {
       success: false,
