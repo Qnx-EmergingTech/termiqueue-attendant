@@ -452,7 +452,7 @@ export const getAllBuses = async () => {
       cursor = data.next_cursor;
     }
 
-    return { success: true, buses };
+    return { success: true, buses.items ?? [] };
   } catch (error) {
     return {
       success: false,
